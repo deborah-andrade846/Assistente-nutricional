@@ -2,9 +2,17 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#16a34a">
 <title>NutriCasa — Planejador Alimentar Inteligente</title>
+<!-- PWA: instalável e offline -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NutriCasa">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
 /* ============================================================
    NUTRICASA — Design System
@@ -1902,6 +1910,13 @@ function init(){
   if(bad.length) console.warn("Ingredientes inexistentes:",bad);
 }
 init();
+
+/* ---------- PWA: registra o service worker (só funciona via http/https) ---------- */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(e=>console.warn("SW falhou:",e));
+  });
+}
 </script>
 </body>
 </html>
