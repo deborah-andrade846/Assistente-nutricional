@@ -227,7 +227,7 @@ input,select{font-family:inherit}
 .food{
   display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;
   background:var(--surface);border:1.5px solid var(--border);transition:var(--t);
-  text-align:left;position:relative;overflow:hidden;
+  text-align:left;position:relative;overflow:hidden;flex-wrap:wrap;cursor:pointer;user-select:none;
 }
 .food:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .food .emj{font-size:21px;flex-shrink:0;transition:var(--t)}
@@ -241,6 +241,30 @@ input,select{font-family:inherit}
   background:var(--accent);color:#fff;display:none;place-items:center;font-size:11px;font-weight:800;
 }
 .food.on .check{display:grid}
+/* quantity stepper */
+.qty{display:none;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--border)}
+.food.on .qty{display:flex}
+.qty button{width:25px;height:25px;border-radius:8px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);font-size:15px;font-weight:800;color:var(--accent-d);line-height:1;transition:var(--t)}
+.qty button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.qty .qval{font-size:13px;color:var(--text);text-align:center;flex:1}
+.qty .qval b{font-weight:800;font-size:14px}
+.qty .qu{font-size:11px;color:var(--text-soft);font-weight:600}
+.lqty{display:flex;width:auto;margin:0;padding:0;border:none;gap:5px}
+.lqty button{width:26px;height:26px;background:var(--surface-2)}
+.lqty .qval{min-width:46px;flex:none}
+/* consumo da semana */
+.consumo-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;background:var(--surface-2);margin-bottom:8px}
+.consumo-row.short{background:var(--amber-l)}
+.consumo-row .emj{font-size:19px;flex-shrink:0}
+.consumo-row .cn{font-size:13.5px;font-weight:650;min-width:96px;flex-shrink:0}
+.consumo-row .cbar{flex:1;height:7px;border-radius:20px;background:var(--surface-3);overflow:hidden;min-width:50px}
+.consumo-row .cbar > div{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.consumo-row.short .cbar > div{background:linear-gradient(90deg,var(--amber),#f0a942)}
+.consumo-row .cnum{font-size:11.5px;color:var(--text-soft);font-weight:600;white-space:nowrap}
+.consumo-row .ctag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.consumo-row .ctag.short{background:var(--amber);color:#fff}
+.consumo-row .ctag.ok{background:var(--accent-l);color:var(--accent-d)}
+@media(max-width:560px){.consumo-row .cbar{display:none}.consumo-row .cn{min-width:0}}
 
 /* ===================== PROFILE / INTENSITY ===================== */
 .intens-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -839,9 +863,9 @@ const TABS = [
 const LS_KEY = "nutricasa_v1";
 const todayStr = ()=> new Date().toISOString().slice(0,10);
 let state = {
-  estoque:[], objetivos:[], restricoes:[], intensidade:"moderado",
+  estoque:[], qtd:{}, objetivos:[], restricoes:[], intensidade:"moderado",
   favoritos:[], compras:[], historico:[], theme:"light",
-  cardapio:null, metasDia:{date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0},
+  cardapio:null, semana:null, metasDia:{date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0},
 };
 function load(){
   try{
@@ -850,11 +874,47 @@ function load(){
   }catch(e){}
   if(!state.metasDia || state.metasDia.date!==todayStr())
     state.metasDia = {date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0};
+  // migração: garante quantidades no estoque e nos itens de compra
+  if(!state.qtd) state.qtd = {};
+  state.estoque.forEach(id=>{ if(state.qtd[id]==null) state.qtd[id]=1; });
+  (state.compras||[]).forEach(c=>{ if(c.qtd==null) c.qtd=1; if(c.unidade==null) c.unidade = FOOD_MAP[c.id]?unitOf(c.id):"un"; });
 }
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 
 const has = id => state.estoque.includes(id);
 const isFav = id => state.favoritos.includes(id);
+
+/* ---------- QUANTIDADES / UNIDADES ---------- */
+const CAT_UNIT = {
+  "Frutas":"un","Verduras":"maço","Legumes":"un","Proteínas animais":"porção","Ovos":"un",
+  "Frios":"fatias","Queijos":"porção","Laticínios":"porção","Pães":"un","Massas":"porção","Grãos":"porção",
+  "Arroz":"porção","Feijões":"porção","Tubérculos":"un","Cereais":"porção","Embutidos":"porção",
+  "Congelados":"un","Temperos":"un","Conservas":"lata","Bebidas":"un","Cafés":"un",
+  "Chás":"un","Doces":"un","Sobremesas":"un","Snacks":"pacote","Industrializados":"un","Ingredientes":"un"
+};
+const UNIT_OVERRIDE = { leite:"L", iogurte:"un", agua:"L", refrigerante:"garrafa", suco:"un", aguacoco:"un", leitevegetal:"L", milho:"un" };
+function unitOf(id){ const f=FOOD_MAP[id]; if(!f) return "un"; return UNIT_OVERRIDE[id] || CAT_UNIT[f.cat] || "un"; }
+function qtyOf(id){ return state.qtd[id]!=null ? state.qtd[id] : (has(id)?1:0); }
+// ingredientes cujo consumo NÃO é rastreado por quantidade (uso indeterminado)
+function trackable(id){ const f=FOOD_MAP[id]; return !!f && f.cat!=="Temperos" && f.cat!=="Ingredientes"; }
+// quanto uma receita consome de um ingrediente (padrão 1; overrides abaixo)
+const RECIPE_NEED = {
+  "ovos-queijo":{ovo:3}, "pao-ovo":{ovo:2}, "crepioca":{ovo:2}, "omelete-legumes":{ovo:3},
+  "cuscuz-ovo":{ovo:2}, "panqueca-banana":{banana:2}, "pao-requeijao-peru":{paointegral:2},
+  "carne-legumes":{tomate:2}, "file-pure":{batata:4}, "peixe-assado":{batata:3},
+  "salada-completa":{ovo:2}, "arroz-legumes-ovo":{ovo:2}, "bife-acebolado":{cebola:2},
+  "sanduiche-natural":{paointegral:2}, "omelete-leve":{ovo:3}, "salada-atum":{ovo:2},
+  "sopa-legumes":{batata:2}, "caldo-verde":{batata:3}, "arroz-ovo-sobras":{ovo:2}, "pao-queijo-cafe":{paoqueijo:3},
+};
+function ingNeed(r,id){ const n=RECIPE_NEED[r.id]; return (n && n[id]!=null) ? n[id] : 1; }
+// ingredientes que uma receita de fato usaria (essenciais + opcionais em estoque), rastreáveis
+function ingUsados(r){
+  const used=new Set(r.ess||[]);
+  (r.opt||[]).forEach(id=>{ if(has(id)) used.add(id); });
+  if(r.optAny){ const a=r.optAny.find(id=>has(id))||r.optAny[0]; if(a) used.add(a); }
+  return [...used].filter(trackable);
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i];a[i]=a[j];a[j]=t; } return a; }
 
 /* ============================================================
    RECIPE ENGINE
@@ -927,6 +987,45 @@ function gerarCardapio(){
     plano.push({hora,label,tipo,recipe:pick});
   }
   return plano;
+}
+// gera a semana garantindo variedade: nenhuma receita repetida em dias seguidos
+function gerarSemana(){
+  const cfg = INTENS[state.intensidade];
+  const dias = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+  const slots = cfg.refeicoes.map(r=>[r[1],r[2]]); // [label, tipo]
+  const grid = slots.map(s=>{
+    let pool = getRecipes({tipo:s[1], intens:state.intensidade});
+    pool = pool.filter(r=>r.complete).length ? pool.filter(r=>r.complete) : pool;
+    pool = shuffle(pool.slice());
+    const ids = [];
+    for(let d=0; d<7; d++){
+      // percorre a pool em ordem: dias consecutivos sempre diferem quando há 2+ receitas
+      const r = pool.length ? pool[d % pool.length] : null;
+      ids.push(r ? r.id : null);
+    }
+    return {label:s[0], tipo:s[1], ids};
+  });
+  return {intensidade:state.intensidade, dias, grid};
+}
+// soma o consumo de ingredientes da semana planejada e compara com o estoque
+function consumoSemana(){
+  if(!state.semana) return [];
+  const need = {};
+  for(const row of state.semana.grid){
+    for(const id of row.ids){
+      if(!id) continue;
+      const r = RECIPES.find(x=>x.id===id); if(!r) continue;
+      for(const iid of ingUsados(r)){
+        need[iid] = (need[iid]||0) + ingNeed(r,iid);
+      }
+    }
+  }
+  return Object.keys(need).map(id=>{
+    const f = FOOD_MAP[id];
+    const have = qtyOf(id);
+    return {id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"", unidade:unitOf(id),
+      need:need[id], have, falta:Math.max(0, need[id]-have)};
+  }).sort((a,b)=> b.falta-a.falta || b.need-a.need);
 }
 
 /* ============================================================
@@ -1008,18 +1107,24 @@ function renderEstoque(){
       <div class="cat-head"><span class="emj">${CAT_EMOJI[c]}</span><h3>${c}</h3>
         <span class="count">${sel}/${items.length} no estoque</span></div>
       <div class="food-grid">
-        ${items.map(f=>`<button class="food ${has(f.id)?'on':''}" data-action="toggle-food" data-id="${f.id}">
-          <span class="check">✓</span><span class="emj">${f.emoji}</span><span class="nm">${f.nome}</span></button>`).join("")}
+        ${items.map(f=>`<div class="food ${has(f.id)?'on':''}" data-action="toggle-food" data-id="${f.id}">
+          <span class="check">✓</span><span class="emj">${f.emoji}</span><span class="nm">${f.nome}</span>
+          <div class="qty" data-action="noop">
+            <button data-action="qtd-dec" data-id="${f.id}" aria-label="menos">−</button>
+            <span class="qval"><b class="qv">${qtyOf(f.id)}</b> <span class="qu">${unitOf(f.id)}</span></span>
+            <button data-action="qtd-inc" data-id="${f.id}" aria-label="mais">＋</button>
+          </div></div>`).join("")}
       </div></div>`;
   }).join("");
   if(!blocks) blocks = `<div class="empty"><span class="emj">🔍</span><h3>Nada encontrado</h3><p>Tente outro termo ou categoria.</p></div>`;
 
   const makeable = getRecipes({mode:"makeable"}).length;
   return `
-  ${head("🛒","Meu Estoque","Marque tudo que você tem na despensa e na geladeira — até o que sobrou da semana. As sugestões se adaptam na hora.")}
+  ${head("🛒","Meu Estoque","Marque tudo que você tem na despensa e na geladeira e ajuste a quantidade de cada item nos botões − e ＋. As receitas e a lista de compras usam essas quantidades.")}
   <div class="stat-row">
     <div class="stat"><div class="lab">📦 No estoque</div><div class="num">${total}<small> itens</small></div><span class="ic">📦</span></div>
     <div class="stat"><div class="lab">👨‍🍳 Dá pra fazer agora</div><div class="num">${makeable}<small> receitas</small></div><span class="ic">👨‍🍳</span></div>
+    <div class="stat"><div class="lab">📊 Quantidade total</div><div class="num">${state.estoque.reduce((s,id)=>s+qtyOf(id),0)}<small> un./porções</small></div><span class="ic">📊</span></div>
     <div class="stat"><div class="lab">🗂️ Categorias</div><div class="num">${new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size}</div><span class="ic">🗂️</span></div>
   </div>
   <div class="toolbar">
@@ -1175,6 +1280,7 @@ function emptyEstoque(){
 
 /* ---------- RECEITAS ---------- */
 let recFilter = "todas"; // todas | completas | quase
+let comprasShowFaltam = false, faltamSearch = "", faltamCat = "todas";
 function renderReceitas(){
   if(!state.estoque.length) return head("👨‍🍳","Receitas","Receitas que combinam com o seu estoque.")+emptyEstoque();
   let list = getRecipes({intens:null, maxMissing:99});
@@ -1237,28 +1343,32 @@ function renderRapidas(){
 /* ---------- SEMANAL ---------- */
 function renderSemanal(){
   if(!state.estoque.length) return head("🗓️","Organização Semanal","Sua semana planejada.")+emptyEstoque();
-  const dias = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
   const cfg = INTENS[state.intensidade];
-  // gera uma semana variada
-  const slots = cfg.refeicoes.map(r=>[r[1],r[2]]);
-  // monta grade: para cada slot, sortear receitas diferentes por dia
-  function pick(tipo, seed){
-    const cands = getRecipes({tipo, intens:state.intensidade});
-    const pool = cands.filter(r=>r.complete).length? cands.filter(r=>r.complete): cands;
-    if(!pool.length) return null;
-    return pool[seed % pool.length];
-  }
-  let rows = slots.map((s,si)=>{
-    const cells = dias.map((d,di)=>{
-      const r = pick(s[1], si*3+di*2+1);
+  if(!state.semana || state.semana.intensidade!==state.intensidade){ state.semana = gerarSemana(); save(); }
+  const dias = state.semana.dias;
+  const rows = state.semana.grid.map(row=>{
+    const cells = row.ids.map(id=>{
+      const r = id && RECIPES.find(x=>x.id===id);
       return r ? `<div class="wk-cell"><div class="meal">${r.emj} ${r.nome}</div></div>`
                : `<div class="wk-cell empty">—</div>`;
     }).join("");
-    return `<div class="wk-cell wk-label">${s[0]}</div>${cells}`;
+    return `<div class="wk-cell wk-label">${row.label}</div>${cells}`;
   }).join("");
   const headRow = `<div class="wk-cell wk-label" style="background:transparent;border:none"></div>${dias.map(d=>`<div class="wk-cell wk-head">${d}</div>`).join("")}`;
+  const faltas = consumoSemana().filter(c=>c.falta>0);
+  const consumoBanner = faltas.length
+    ? `<div class="banner" style="background:linear-gradient(120deg,var(--amber-l),var(--surface-2))">
+        <span class="emj">🛒</span>
+        <div style="flex:1"><h4>Sua semana consome mais do que você tem</h4>
+          <p>${faltas.length} ingrediente(s) não têm quantidade suficiente para todas as refeições planejadas.</p></div>
+        <button class="btn btn-sm btn-primary" data-action="nav" data-tab="compras">Ver na lista →</button></div>`
+    : `<div class="banner" style="background:linear-gradient(120deg,var(--accent-l),var(--surface-2))">
+        <span class="emj">✅</span>
+        <div><h4>Estoque suficiente para a semana</h4>
+          <p>As quantidades do seu estoque cobrem todas as refeições planejadas.</p></div></div>`;
   return `
-  ${head("🗓️","Organização Semanal","Um rascunho da sua semana, montado com receitas do seu estoque no perfil "+cfg.nome+". Use como base e ajuste como quiser.")}
+  ${head("🗓️","Organização Semanal","Uma semana variada montada com o seu estoque no perfil "+cfg.nome+" — sem repetir a mesma receita em dias seguidos.")}
+  ${consumoBanner}
   <div class="fab-row" style="margin-bottom:16px">
     <button class="btn btn-primary" data-action="regen-semana">🔀 Gerar nova semana</button>
     <button class="btn btn-ghost" data-action="nav" data-tab="compras">🧾 Ver lista de compras</button>
@@ -1348,9 +1458,68 @@ function renderEstrategias(){
 }
 
 /* ---------- COMPRAS ---------- */
+function consumoRow(c){
+  const pct = c.need ? Math.min(100, Math.round(c.have/c.need*100)) : 100;
+  return `<div class="consumo-row ${c.falta>0?'short':''}">
+    <span class="emj">${c.emoji}</span>
+    <span class="cn">${c.nome}</span>
+    <span class="cbar"><div style="width:${pct}%"></div></span>
+    <span class="cnum">tem ${c.have} · precisa ${c.need} ${c.unidade}</span>
+    ${c.falta>0?`<span class="ctag short">faltam ${c.falta}</span>`:`<span class="ctag ok">ok</span>`}
+  </div>`;
+}
+function renderFaltamPicker(){
+  let foods = FOODS.map(f=>FOOD_MAP[f[0]]).filter(f=>!has(f.id));
+  const q = faltamSearch.trim().toLowerCase();
+  if(q) foods = foods.filter(f=>f.nome.toLowerCase().includes(q));
+  if(faltamCat!=="todas") foods = foods.filter(f=>f.cat===faltamCat);
+  const catsDisp = CATS.filter(c=>FOODS.some(f=>f[3]===c && !has(f[0])));
+  const pills = `<div class="cat-filter">
+    <button class="cat-pill ${faltamCat==='todas'?'on':''}" data-action="faltam-cat" data-cat="todas">🍴 Todas</button>
+    ${catsDisp.map(c=>`<button class="cat-pill ${faltamCat===c?'on':''}" data-action="faltam-cat" data-cat="${c}">${CAT_EMOJI[c]} ${c}</button>`).join("")}
+  </div>`;
+  const grid = foods.length ? `<div class="food-grid">${foods.map(f=>{
+    const inList = state.compras.some(c=>c.id===f.id);
+    return `<button class="food ${inList?'on':''}" data-action="add-from-food" data-id="${f.id}">
+      <span class="check">${inList?'✓':'＋'}</span><span class="emj">${f.emoji}</span><span class="nm">${f.nome}</span></button>`;
+  }).join("")}</div>` : `<p class="muted" style="font-size:13.5px;padding:6px 0">Nenhum item encontrado — você já tem tudo isso no estoque. 🎉</p>`;
+  return `<div class="card" style="margin-bottom:18px">
+    <div class="section-title" style="margin-top:0">🛍️ Itens que faltam no seu estoque</div>
+    <p class="muted" style="font-size:13px;margin-bottom:12px">Tudo que existe no app e ainda não está no seu estoque. Toque para incluir na lista de compras.</p>
+    <div class="search" style="margin-bottom:12px"><span class="ic">🔍</span><input id="faltamSearch" placeholder="Buscar item que falta..." value="${faltamSearch.replace(/"/g,'&quot;')}"></div>
+    ${pills}${grid}
+  </div>`;
+}
 function renderCompras(){
   const list = state.compras;
-  // sugestões: itens faltantes de receitas quase-prontas
+  const done = list.filter(c=>c.done).length;
+  const consumo = consumoSemana();
+  const faltas = consumo.filter(c=>c.falta>0);
+  const okCount = consumo.length - faltas.length;
+
+  // ----- painel de consumo da semana -----
+  let consumoHtml;
+  if(!state.semana){
+    consumoHtml = `<div class="banner"><span class="emj">📊</span>
+      <div style="flex:1"><h4>Acompanhe o consumo da semana</h4>
+        <p>Gere sua Organização Semanal para comparar o que as receitas consomem com as quantidades do seu estoque.</p></div>
+      <button class="btn btn-sm btn-primary" data-action="nav" data-tab="semanal">Montar semana</button></div>`;
+  } else {
+    const rowsHtml = faltas.length
+      ? faltas.map(consumoRow).join("")
+      : `<div class="muted" style="font-size:13.5px;padding:6px 2px">🎉 Suas quantidades cobrem toda a semana planejada — nada faltando.</div>`;
+    consumoHtml = `<div class="card" style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div class="section-title" style="margin:0">📊 Consumo da semana <span class="pill">${INTENS[state.semana.intensidade]?.nome||""}</span></div>
+        ${faltas.length?`<button class="btn btn-sm btn-primary" data-action="add-faltas">＋ Adicionar ${faltas.length} item(ns) em falta</button>`:""}
+      </div>
+      <p class="muted" style="font-size:13px;margin:8px 0 13px">Quanto a sua semana planejada consome de cada ingrediente x o que você tem no estoque.</p>
+      ${rowsHtml}
+      ${okCount>0?`<div class="muted" style="font-size:12.5px;margin-top:11px">✓ ${okCount} ingrediente(s) com quantidade suficiente no estoque.</div>`:""}
+    </div>`;
+  }
+
+  // ----- sugestões p/ destravar receitas -----
   const quase = getRecipes({maxMissing:2}).filter(r=>!r.complete && r.missing.length<=2);
   const sugIds = [...new Set(quase.flatMap(r=>r.missing))].filter(id=>!list.some(c=>c.id===id)).slice(0,10);
   const sugHtml = sugIds.length ? `<div class="card" style="margin-bottom:18px">
@@ -1359,24 +1528,35 @@ function renderCompras(){
     <div class="chip-row">${sugIds.map(id=>`<button class="chip" data-action="add-compra-sug" data-id="${id}">${FOOD_MAP[id]?.emoji} ${FOOD_MAP[id]?.nome} <span class="x">＋</span></button>`).join("")}</div>
   </div>` : "";
 
-  const done = list.filter(c=>c.done).length;
+  // ----- itens da lista (com quantidade) -----
   const items = list.length ? list.map((c,i)=>`
     <div class="list-item ${c.done?'done':''}">
       <button class="lcheck ${c.done?'on':''}" data-action="toggle-compra" data-i="${i}">${c.done?'✓':''}</button>
       <span class="lname">${c.emoji||"🛒"} ${c.nome}</span>
+      <div class="qty lqty" data-action="noop">
+        <button data-action="compra-qtd-dec" data-i="${i}" aria-label="menos">−</button>
+        <span class="qval"><b>${c.qtd||1}</b> <span class="qu">${c.unidade||"un"}</span></span>
+        <button data-action="compra-qtd-inc" data-i="${i}" aria-label="mais">＋</button>
+      </div>
       ${c.cat?`<span class="ltag">${c.cat}</span>`:""}
       <button class="del-btn" data-action="del-compra" data-i="${i}">✕</button>
-    </div>`).join("") : `<div class="empty"><span class="emj">🧾</span><h3>Lista vazia</h3><p>Adicione itens manualmente ou pelas sugestões e receitas.</p></div>`;
+    </div>`).join("") : `<div class="empty"><span class="emj">🧾</span><h3>Lista vazia</h3><p>Adicione itens manualmente, pelo consumo da semana, pelas sugestões ou pelos itens que faltam no estoque.</p></div>`;
 
   return `
-  ${head("🧾","Lista de Compras","Tudo que falta para completar suas receitas favoritas — mais o que você adicionar manualmente.")}
-  ${list.length?`<div class="stat-row"><div class="stat"><div class="lab">🛒 Itens</div><div class="num">${list.length}</div></div>
-    <div class="stat"><div class="lab">✅ Comprados</div><div class="num">${done}<small>/${list.length}</small></div></div></div>`:""}
+  ${head("🧾","Lista de Compras","O que falta para completar suas receitas e cobrir a semana — com quantidades. Inclua também itens do app que você não tem ou qualquer coisa manualmente.")}
+  ${list.length?`<div class="stat-row">
+    <div class="stat"><div class="lab">🛒 Itens</div><div class="num">${list.length}</div></div>
+    <div class="stat"><div class="lab">✅ Comprados</div><div class="num">${done}<small>/${list.length}</small></div></div>
+    <div class="stat"><div class="lab">📦 Total a comprar</div><div class="num">${list.reduce((s,c)=>s+(c.qtd||1),0)}<small> un./porções</small></div></div>
+  </div>`:""}
   <div class="toolbar">
-    <div class="search"><span class="ic">＋</span><input id="compraInput" placeholder="Adicionar item à lista e pressione Enter..."></div>
+    <div class="search"><span class="ic">＋</span><input id="compraInput" placeholder="Adicionar item (ex.: 4 batatas) e pressione Enter..."></div>
     <button class="btn btn-sm btn-primary" data-action="add-compra-manual">Adicionar</button>
+    <button class="btn btn-sm ${comprasShowFaltam?'btn-primary':'btn-ghost'}" data-action="toggle-faltam">🛍️ Itens que faltam</button>
     ${list.length?`<button class="btn btn-sm btn-ghost" data-action="clear-compras">🗑️ Limpar</button>`:""}
   </div>
+  ${comprasShowFaltam?renderFaltamPicker():""}
+  ${consumoHtml}
   ${sugHtml}
   ${items}`;
 }
@@ -1476,11 +1656,19 @@ function toast(msg, emj="✓"){
   setTimeout(()=>{ t.style.transition="all .3s"; t.style.opacity="0"; t.style.transform="translateY(10px)"; setTimeout(()=>t.remove(),300); }, 2200);
 }
 
-function addCompraById(id){
-  if(state.compras.some(c=>c.id===id)) { toast("Já está na lista"); return; }
+// adiciona à lista de compras com quantidade; se já existir, ajusta para a maior quantidade.
+// retorna true se um item novo foi criado.
+function addCompraById(id, qty){
+  qty = qty || 1;
   const f = FOOD_MAP[id];
-  state.compras.push({id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"", done:false});
-  save();
+  const ex = state.compras.find(c=>c.id===id);
+  if(ex){ ex.qtd = Math.max(ex.qtd||1, qty); save(); return false; }
+  state.compras.push({id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"", done:false, qtd:qty, unidade:f?unitOf(id):"un"});
+  save(); return true;
+}
+// atualiza só o número de quantidade no card do estoque, sem re-render (preserva scroll)
+function updateQtyUI(id){
+  document.querySelectorAll('.food[data-id="'+id+'"] .qv').forEach(el=> el.textContent = qtyOf(id));
 }
 
 const COMMON_ITEMS = ["paofrances","ovo","arroz","feijao","leite","cafe","manteiga","queijoprato","frango","macarrao","tomate","cebola","alho","banana","azeite","sal","oleo","acucar","molhotomate","aveia"];
@@ -1490,22 +1678,26 @@ const ACTIONS = {
   "open-menu":()=>{document.getElementById("sidebar").classList.add("open");document.getElementById("scrim").classList.add("show");},
   "close-menu":()=>{document.getElementById("sidebar").classList.remove("open");document.getElementById("scrim").classList.remove("show");},
   "toggle-theme":()=>{ state.theme = state.theme==="dark"?"light":"dark"; applyTheme(); save(); },
+  "noop":()=>{},
   "toggle-food":(d)=>{
     const id=d.id, i=state.estoque.indexOf(id);
-    if(i>=0) state.estoque.splice(i,1); else state.estoque.push(id);
+    if(i>=0){ state.estoque.splice(i,1); delete state.qtd[id]; }
+    else { state.estoque.push(id); if(state.qtd[id]==null) state.qtd[id]=1; }
     state.cardapio=null; save();
     // re-render leve do estoque (preserva scroll)
     if(currentTab==="estoque"){ patchEstoque(); } else render();
     renderNav();
   },
+  "qtd-inc":(d)=>{ if(!has(d.id)) return; state.qtd[d.id]=qtyOf(d.id)+1; save(); updateQtyUI(d.id); patchEstoqueStats(); },
+  "qtd-dec":(d)=>{ if(!has(d.id)) return; state.qtd[d.id]=Math.max(1,qtyOf(d.id)-1); save(); updateQtyUI(d.id); patchEstoqueStats(); },
   "filter-cat":(d)=>{ estoqueCat=d.cat; render(); },
   "add-essentials":()=>{
     let added=0;
-    COMMON_ITEMS.forEach(id=>{ if(!has(id)){ state.estoque.push(id); added++; } });
+    COMMON_ITEMS.forEach(id=>{ if(!has(id)){ state.estoque.push(id); if(state.qtd[id]==null) state.qtd[id]=1; added++; } });
     state.cardapio=null; save(); render();
     toast(added?`${added} itens comuns adicionados`:"Você já tem os básicos", "✨");
   },
-  "clear-estoque":()=>{ if(confirm("Limpar todo o estoque?")){ state.estoque=[]; state.cardapio=null; save(); render(); toast("Estoque limpo","🗑️"); } },
+  "clear-estoque":()=>{ if(confirm("Limpar todo o estoque?")){ state.estoque=[]; state.qtd={}; state.cardapio=null; save(); render(); toast("Estoque limpo","🗑️"); } },
   "toggle-objetivo":(d)=>{ toggleArr(state.objetivos,d.id); save(); render(); },
   "toggle-restricao":(d)=>{ toggleArr(state.restricoes,d.id); state.cardapio=null; save(); render(); },
   "set-intensidade":(d)=>{ state.intensidade=d.id; state.cardapio=null; save(); render(); toast(`Perfil ${INTENS[d.id].nome} ativado`, INTENS[d.id].emj); },
@@ -1533,20 +1725,36 @@ const ACTIONS = {
   "add-missing":(d)=>{
     const r=RECIPES.find(x=>x.id===d.id); if(!r) return;
     const m=recipeMatch(r); let n=0;
-    m.missing.forEach(id=>{ if(!state.compras.some(c=>c.id===id)){ addCompraById(id); n++; } });
+    m.missing.forEach(id=>{ if(addCompraById(id, ingNeed(r,id))) n++; });
     render(); renderNav(); toast(n?`${n} item(ns) na lista de compras`:"Já estavam na lista","🧾");
   },
-  "add-compra-sug":(d)=>{ addCompraById(d.id); render(); renderNav(); toast("Adicionado à lista","🧾"); },
+  "add-compra-sug":(d)=>{ addCompraById(d.id,1); render(); renderNav(); toast("Adicionado à lista","🧾"); },
+  // adiciona à lista todos os itens em falta no consumo da semana, com a quantidade que falta
+  "add-faltas":()=>{
+    const faltas=consumoSemana().filter(c=>c.falta>0); let n=0;
+    faltas.forEach(c=>{ if(addCompraById(c.id, c.falta)) n++; });
+    save(); render(); renderNav();
+    toast(faltas.length?`${faltas.length} item(ns) com quantidade adicionados`:"Nada faltando","🧾");
+  },
+  "toggle-faltam":()=>{ comprasShowFaltam=!comprasShowFaltam; render(); },
+  "faltam-cat":(d)=>{ faltamCat=d.cat; render(); },
+  "add-from-food":(d)=>{
+    const novo=addCompraById(d.id,1); render(); renderNav();
+    toast(novo?"Adicionado à lista de compras":"Já está na lista","🛍️");
+  },
+  "compra-qtd-inc":(d)=>{ const c=state.compras[+d.i]; if(c){ c.qtd=(c.qtd||1)+1; save(); render(); } },
+  "compra-qtd-dec":(d)=>{ const c=state.compras[+d.i]; if(c){ c.qtd=Math.max(1,(c.qtd||1)-1); save(); render(); } },
   "add-compra-manual":()=>{
     const inp=document.getElementById("compraInput"); if(!inp) return;
-    const v=inp.value.trim(); if(!v) return;
-    state.compras.push({id:"manual_"+Date.now(), nome:v, emoji:"🛒", cat:"", done:false});
+    let v=inp.value.trim(); if(!v) return;
+    let qtd=1; const m=v.match(/^(\d+)\s+(.+)$/); if(m){ qtd=Math.max(1,+m[1]); v=m[2]; }
+    state.compras.push({id:"manual_"+Date.now(), nome:v, emoji:"🛒", cat:"", done:false, qtd, unidade:"un"});
     save(); render(); renderNav();
   },
   "toggle-compra":(d)=>{ const i=+d.i; if(state.compras[i]){ state.compras[i].done=!state.compras[i].done; save(); render(); } },
   "del-compra":(d)=>{ state.compras.splice(+d.i,1); save(); render(); renderNav(); },
   "clear-compras":()=>{ if(confirm("Limpar lista de compras?")){ state.compras=[]; save(); render(); renderNav(); } },
-  "regen-semana":()=>{ render(); toast("Nova semana gerada","🔀"); },
+  "regen-semana":()=>{ state.semana=gerarSemana(); save(); render(); toast("Nova semana gerada","🔀"); },
   "salvar-semana":()=>toast("Semana pronta!"),
   "clear-historico":()=>{ if(confirm("Limpar todo o histórico?")){ state.historico=[]; save(); render(); } },
   "del-historico":(d)=>{ state.historico.splice(+d.i,1); save(); render(); },
@@ -1554,21 +1762,26 @@ const ACTIONS = {
 
 function toggleArr(arr,v){ const i=arr.indexOf(v); if(i>=0) arr.splice(i,1); else arr.push(v); }
 
+// atualiza apenas os números das estatísticas do estoque (sem re-render)
+function patchEstoqueStats(){
+  const content=document.getElementById("content");
+  if(currentTab!=="estoque") return;
+  const statNums=content.querySelectorAll(".stat .num");
+  if(statNums[0]) statNums[0].innerHTML=`${state.estoque.length}<small> itens</small>`;
+  if(statNums[1]) statNums[1].innerHTML=`${getRecipes({mode:"makeable"}).length}<small> receitas</small>`;
+  if(statNums[2]) statNums[2].innerHTML=`${state.estoque.reduce((s,id)=>s+qtyOf(id),0)}<small> un./porções</small>`;
+  if(statNums[3]) statNums[3].textContent=new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size;
+}
 // patch só dos botões do estoque para preservar o scroll ao marcar itens
 function patchEstoque(){
   document.querySelectorAll(".food").forEach(btn=>{
     const id=btn.dataset.id;
     btn.classList.toggle("on", has(id));
+    const qv=btn.querySelector(".qv"); if(qv) qv.textContent=qtyOf(id);
   });
-  // atualiza contadores de categoria e stats sem re-render total
-  const content=document.getElementById("content");
-  // stats
-  const statNums=content.querySelectorAll(".stat .num");
-  if(statNums[0]) statNums[0].innerHTML=`${state.estoque.length}<small> itens</small>`;
-  if(statNums[1]) statNums[1].innerHTML=`${getRecipes({mode:"makeable"}).length}<small> receitas</small>`;
-  if(statNums[2]) statNums[2].textContent=new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size;
+  patchEstoqueStats();
   // counts por categoria
-  content.querySelectorAll(".cat-block").forEach(block=>{
+  document.getElementById("content").querySelectorAll(".cat-block").forEach(block=>{
     const items=[...block.querySelectorAll(".food")];
     const sel=items.filter(b=>has(b.dataset.id)).length;
     const cnt=block.querySelector(".count");
@@ -1585,9 +1798,10 @@ document.addEventListener("click",(e)=>{
 });
 // search + enter handlers
 document.addEventListener("input",(e)=>{
-  if(e.target.id==="estoqueSearch"){ estoqueSearch=e.target.value; const val=e.target; render();
-    // restaura foco e cursor
-    const inp=document.getElementById("estoqueSearch"); if(inp){ inp.focus(); inp.setSelectionRange(val.value.length,val.value.length); } }
+  if(e.target.id==="estoqueSearch"){ estoqueSearch=e.target.value; render();
+    const inp=document.getElementById("estoqueSearch"); if(inp){ inp.focus(); inp.setSelectionRange(estoqueSearch.length,estoqueSearch.length); } }
+  if(e.target.id==="faltamSearch"){ faltamSearch=e.target.value; render();
+    const inp=document.getElementById("faltamSearch"); if(inp){ inp.focus(); inp.setSelectionRange(faltamSearch.length,faltamSearch.length); } }
 });
 document.addEventListener("keydown",(e)=>{
   if(e.key==="Enter" && e.target.id==="compraInput"){ e.preventDefault(); ACTIONS["add-compra-manual"](); }
