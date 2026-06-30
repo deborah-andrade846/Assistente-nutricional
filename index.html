@@ -242,19 +242,25 @@ input,select{font-family:inherit}
 }
 .food.on .check{display:grid}
 /* quantity stepper */
-.qty{display:none;align-items:center;justify-content:space-between;width:100%;gap:6px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--border)}
+.qty{display:none;align-items:center;justify-content:center;width:100%;gap:6px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--border);flex-wrap:wrap}
 .food.on .qty{display:flex}
 .qty button{width:25px;height:25px;border-radius:8px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);font-size:15px;font-weight:800;color:var(--accent-d);line-height:1;transition:var(--t)}
 .qty button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
-.qty .qval{font-size:13px;color:var(--text);text-align:center;flex:1}
-.qty .qval b{font-weight:800;font-size:14px}
-.qty .qu{font-size:11px;color:var(--text-soft);font-weight:600}
-.lqty{display:flex;width:auto;margin:0;padding:0;border:none;gap:5px}
+.qv-input,.lqv-input{width:52px;flex:1;min-width:40px;text-align:center;font-size:13.5px;font-weight:800;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 2px;outline:none;-moz-appearance:textfield;appearance:textfield}
+.qv-input:focus,.lqv-input:focus{border-color:var(--accent)}
+.qv-input::-webkit-outer-spin-button,.qv-input::-webkit-inner-spin-button,.lqv-input::-webkit-outer-spin-button,.lqv-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.unit-sel{width:100%;font-size:12px;font-weight:650;color:var(--text-soft);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 6px;outline:none;cursor:pointer}
+.unit-sel:focus{border-color:var(--accent)}
+.lqty{display:flex;width:auto;margin:0;padding:0;border:none;gap:5px;flex-wrap:nowrap}
 .lqty button{width:26px;height:26px;background:var(--surface-2)}
-.lqty .qval{min-width:46px;flex:none}
+.lqty .lqv-input{width:46px;flex:none}
+.lqty .unit-sel{width:auto;min-width:72px}
 /* consumo da semana */
 .consumo-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;background:var(--surface-2);margin-bottom:8px}
 .consumo-row.short{background:var(--amber-l)}
+.consumo-row.ref{background:var(--surface-2)}
+.consumo-row .ctag.refbtn{background:var(--violet-l);color:var(--violet);cursor:pointer;transition:var(--t)}
+.consumo-row .ctag.refbtn:hover{background:var(--violet);color:#fff}
 .consumo-row .emj{font-size:19px;flex-shrink:0}
 .consumo-row .cn{font-size:13.5px;font-weight:650;min-width:96px;flex-shrink:0}
 .consumo-row .cbar{flex:1;height:7px;border-radius:20px;background:var(--surface-3);overflow:hidden;min-width:50px}
@@ -353,7 +359,7 @@ input,select{font-family:inherit}
 /* ===================== SHOPPING / SUBS / LISTS ===================== */
 .list-item{
   display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--surface);
-  border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow-sm);transition:var(--t);margin-bottom:9px;
+  border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow-sm);transition:var(--t);margin-bottom:9px;flex-wrap:wrap;
 }
 .list-item:hover{box-shadow:var(--shadow-md)}
 .lcheck{width:24px;height:24px;border-radius:8px;border:2px solid var(--border);flex-shrink:0;display:grid;place-items:center;transition:var(--t);font-size:13px;color:#fff}
@@ -863,7 +869,7 @@ const TABS = [
 const LS_KEY = "nutricasa_v1";
 const todayStr = ()=> new Date().toISOString().slice(0,10);
 let state = {
-  estoque:[], qtd:{}, objetivos:[], restricoes:[], intensidade:"moderado",
+  estoque:[], qtd:{}, unidade:{}, objetivos:[], restricoes:[], intensidade:"moderado",
   favoritos:[], compras:[], historico:[], theme:"light",
   cardapio:null, semana:null, metasDia:{date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0},
 };
@@ -874,10 +880,11 @@ function load(){
   }catch(e){}
   if(!state.metasDia || state.metasDia.date!==todayStr())
     state.metasDia = {date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0};
-  // migração: garante quantidades no estoque e nos itens de compra
+  // migração: garante quantidades e unidades no estoque e nos itens de compra
   if(!state.qtd) state.qtd = {};
+  if(!state.unidade) state.unidade = {};
   state.estoque.forEach(id=>{ if(state.qtd[id]==null) state.qtd[id]=1; });
-  (state.compras||[]).forEach(c=>{ if(c.qtd==null) c.qtd=1; if(c.unidade==null) c.unidade = FOOD_MAP[c.id]?unitOf(c.id):"un"; });
+  (state.compras||[]).forEach(c=>{ if(c.qtd==null) c.qtd=1; if(c.unidade==null) c.unidade = FOOD_MAP[c.id]?refUnitOf(c.id):"un"; });
 }
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 
@@ -893,8 +900,26 @@ const CAT_UNIT = {
   "Chás":"un","Doces":"un","Sobremesas":"un","Snacks":"pacote","Industrializados":"un","Ingredientes":"un"
 };
 const UNIT_OVERRIDE = { leite:"L", iogurte:"un", agua:"L", refrigerante:"garrafa", suco:"un", aguacoco:"un", leitevegetal:"L", milho:"un" };
-function unitOf(id){ const f=FOOD_MAP[id]; if(!f) return "un"; return UNIT_OVERRIDE[id] || CAT_UNIT[f.cat] || "un"; }
+// unidades que o usuário pode escolher
+const UNIDADES = ["un","fatia","pacote","½ pacote","lata","g","kg","ml","L","colher","xícara","copo","prato","porção","maço","dente","punhado"];
+// unidade de REFERÊNCIA da receita (usada para o cálculo de consumo). Não muda.
+function refUnitOf(id){ const f=FOOD_MAP[id]; if(!f) return "un"; return UNIT_OVERRIDE[id] || CAT_UNIT[f.cat] || "un"; }
+// unidade efetiva: a que o usuário escolheu, ou a de referência por padrão
+function unitOf(id){ return state.unidade[id] || refUnitOf(id); }
 function qtyOf(id){ return state.qtd[id]!=null ? state.qtd[id] : (has(id)?1:0); }
+// passo do +/- conforme a unidade (gramas/ml em saltos de 50; kg/L de 0,5)
+function stepFor(u){ if(u==="g"||u==="ml") return 50; if(u==="kg"||u==="L") return 0.5; return 1; }
+// formata número (remove .0 e usa vírgula)
+function fmtQty(n){ return (Math.round(n*100)/100).toString().replace(".",","); }
+// opções <option> de unidades, garantindo a atual mesmo se for custom
+function unitOptions(cur){
+  const opts = UNIDADES.includes(cur) ? UNIDADES : [cur, ...UNIDADES];
+  return opts.map(u=>`<option value="${u}" ${u===cur?'selected':''}>${u}</option>`).join("");
+}
+// <select> de unidades para um item do estoque
+function unitSelect(id){
+  return `<select class="unit-sel" data-id="${id}" data-action="noop">${unitOptions(unitOf(id))}</select>`;
+}
 // ingredientes cujo consumo NÃO é rastreado por quantidade (uso indeterminado)
 function trackable(id){ const f=FOOD_MAP[id]; return !!f && f.cat!=="Temperos" && f.cat!=="Ingredientes"; }
 // quanto uma receita consome de um ingrediente (padrão 1; overrides abaixo)
@@ -1007,25 +1032,32 @@ function gerarSemana(){
   });
   return {intensidade:state.intensidade, dias, grid};
 }
-// soma o consumo de ingredientes da semana planejada e compara com o estoque
+// soma o consumo de ingredientes da semana planejada e compara com o estoque.
+// O cálculo é EXATO quando a unidade do estoque é a mesma de referência da receita;
+// se o usuário escolheu outra unidade (ex.: kg, ml, ½ pacote), vira uma REFERÊNCIA.
 function consumoSemana(){
   if(!state.semana) return [];
-  const need = {};
+  const need = {}, usos = {};
   for(const row of state.semana.grid){
     for(const id of row.ids){
       if(!id) continue;
       const r = RECIPES.find(x=>x.id===id); if(!r) continue;
       for(const iid of ingUsados(r)){
         need[iid] = (need[iid]||0) + ingNeed(r,iid);
+        usos[iid] = (usos[iid]||0) + 1;
       }
     }
   }
   return Object.keys(need).map(id=>{
     const f = FOOD_MAP[id];
+    const refUnit = refUnitOf(id);
+    const userUnit = unitOf(id);
     const have = qtyOf(id);
-    return {id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"", unidade:unitOf(id),
-      need:need[id], have, falta:Math.max(0, need[id]-have)};
-  }).sort((a,b)=> b.falta-a.falta || b.need-a.need);
+    const preciso = (userUnit===refUnit);           // unidades batem → subtração exata
+    const falta = preciso ? Math.max(0, need[id]-have) : 0;
+    return {id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"",
+      refUnit, userUnit, need:need[id], usos:usos[id], have, preciso, falta};
+  }).sort((a,b)=> b.falta-a.falta || (b.preciso-a.preciso) || b.need-a.need);
 }
 
 /* ============================================================
@@ -1110,9 +1142,10 @@ function renderEstoque(){
         ${items.map(f=>`<div class="food ${has(f.id)?'on':''}" data-action="toggle-food" data-id="${f.id}">
           <span class="check">✓</span><span class="emj">${f.emoji}</span><span class="nm">${f.nome}</span>
           <div class="qty" data-action="noop">
-            <button data-action="qtd-dec" data-id="${f.id}" aria-label="menos">−</button>
-            <span class="qval"><b class="qv">${qtyOf(f.id)}</b> <span class="qu">${unitOf(f.id)}</span></span>
-            <button data-action="qtd-inc" data-id="${f.id}" aria-label="mais">＋</button>
+            <button data-action="qtd-dec" data-id="${f.id}" aria-label="diminuir">−</button>
+            <input class="qv-input" type="number" inputmode="decimal" min="0" step="${stepFor(unitOf(f.id))}" value="${qtyOf(f.id)}" data-id="${f.id}" aria-label="quantidade">
+            <button data-action="qtd-inc" data-id="${f.id}" aria-label="aumentar">＋</button>
+            ${unitSelect(f.id)}
           </div></div>`).join("")}
       </div></div>`;
   }).join("");
@@ -1120,11 +1153,14 @@ function renderEstoque(){
 
   const makeable = getRecipes({mode:"makeable"}).length;
   return `
-  ${head("🛒","Meu Estoque","Marque tudo que você tem na despensa e na geladeira e ajuste a quantidade de cada item nos botões − e ＋. As receitas e a lista de compras usam essas quantidades.")}
+  ${head("🛒","Meu Estoque","Marque o que você tem em casa. Em cada item você define a quantidade (pode ser fracionada, ex.: 0,5) e escolhe a unidade de medida.")}
+  <div class="banner" style="background:linear-gradient(120deg,var(--violet-l),var(--surface-2))">
+    <span class="emj">📏</span>
+    <div><h4>Você define a medida</h4><p>Digite a quantidade no campo (ex.: <b>0,5</b> para meio pacote ou <b>250</b> para 250 ml) e troque a unidade no seletor ao lado — un, g, kg, ml, L, pacote, fatia, copo… Não precisa adivinhar o que é "1 porção".</p></div>
+  </div>
   <div class="stat-row">
     <div class="stat"><div class="lab">📦 No estoque</div><div class="num">${total}<small> itens</small></div><span class="ic">📦</span></div>
     <div class="stat"><div class="lab">👨‍🍳 Dá pra fazer agora</div><div class="num">${makeable}<small> receitas</small></div><span class="ic">👨‍🍳</span></div>
-    <div class="stat"><div class="lab">📊 Quantidade total</div><div class="num">${state.estoque.reduce((s,id)=>s+qtyOf(id),0)}<small> un./porções</small></div><span class="ic">📊</span></div>
     <div class="stat"><div class="lab">🗂️ Categorias</div><div class="num">${new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size}</div><span class="ic">🗂️</span></div>
   </div>
   <div class="toolbar">
@@ -1459,13 +1495,23 @@ function renderEstrategias(){
 
 /* ---------- COMPRAS ---------- */
 function consumoRow(c){
-  const pct = c.need ? Math.min(100, Math.round(c.have/c.need*100)) : 100;
-  return `<div class="consumo-row ${c.falta>0?'short':''}">
+  if(c.preciso){
+    const pct = c.need ? Math.min(100, Math.round(c.have/c.need*100)) : 100;
+    return `<div class="consumo-row ${c.falta>0?'short':''}">
+      <span class="emj">${c.emoji}</span>
+      <span class="cn">${c.nome}</span>
+      <span class="cbar"><div style="width:${pct}%"></div></span>
+      <span class="cnum">tem ${fmtQty(c.have)} · precisa ${fmtQty(c.need)} ${c.refUnit}</span>
+      ${c.falta>0?`<span class="ctag short">faltam ${fmtQty(c.falta)}</span>`:`<span class="ctag ok">ok</span>`}
+    </div>`;
+  }
+  // unidade personalizada (ex.: kg, ml, ½ pacote): mostramos como referência, sem subtração
+  const inList = state.compras.some(x=>x.id===c.id);
+  return `<div class="consumo-row ref">
     <span class="emj">${c.emoji}</span>
     <span class="cn">${c.nome}</span>
-    <span class="cbar"><div style="width:${pct}%"></div></span>
-    <span class="cnum">tem ${c.have} · precisa ${c.need} ${c.unidade}</span>
-    ${c.falta>0?`<span class="ctag short">faltam ${c.falta}</span>`:`<span class="ctag ok">ok</span>`}
+    <span class="cnum" style="flex:1">usado em ${c.usos} refeição(ões) nesta semana · você tem ${fmtQty(c.have)} ${c.userUnit} (confira se cobre)</span>
+    <button class="ctag ${inList?'ok':'refbtn'}" data-action="add-from-food" data-id="${c.id}">${inList?'na lista':'＋ incluir'}</button>
   </div>`;
 }
 function renderFaltamPicker(){
@@ -1494,8 +1540,9 @@ function renderCompras(){
   const list = state.compras;
   const done = list.filter(c=>c.done).length;
   const consumo = consumoSemana();
-  const faltas = consumo.filter(c=>c.falta>0);
-  const okCount = consumo.length - faltas.length;
+  const faltas = consumo.filter(c=>c.preciso && c.falta>0);
+  const refs = consumo.filter(c=>!c.preciso);
+  const okCount = consumo.filter(c=>c.preciso && c.falta===0).length;
 
   // ----- painel de consumo da semana -----
   let consumoHtml;
@@ -1505,15 +1552,16 @@ function renderCompras(){
         <p>Gere sua Organização Semanal para comparar o que as receitas consomem com as quantidades do seu estoque.</p></div>
       <button class="btn btn-sm btn-primary" data-action="nav" data-tab="semanal">Montar semana</button></div>`;
   } else {
-    const rowsHtml = faltas.length
-      ? faltas.map(consumoRow).join("")
+    const rows = [...faltas, ...refs];
+    const rowsHtml = rows.length
+      ? rows.map(consumoRow).join("")
       : `<div class="muted" style="font-size:13.5px;padding:6px 2px">🎉 Suas quantidades cobrem toda a semana planejada — nada faltando.</div>`;
     consumoHtml = `<div class="card" style="margin-bottom:18px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
         <div class="section-title" style="margin:0">📊 Consumo da semana <span class="pill">${INTENS[state.semana.intensidade]?.nome||""}</span></div>
         ${faltas.length?`<button class="btn btn-sm btn-primary" data-action="add-faltas">＋ Adicionar ${faltas.length} item(ns) em falta</button>`:""}
       </div>
-      <p class="muted" style="font-size:13px;margin:8px 0 13px">Quanto a sua semana planejada consome de cada ingrediente x o que você tem no estoque.</p>
+      <p class="muted" style="font-size:13px;margin:8px 0 13px">Quanto a sua semana planejada consome de cada ingrediente x o que você tem no estoque. Itens em unidade personalizada aparecem como referência.</p>
       ${rowsHtml}
       ${okCount>0?`<div class="muted" style="font-size:12.5px;margin-top:11px">✓ ${okCount} ingrediente(s) com quantidade suficiente no estoque.</div>`:""}
     </div>`;
@@ -1534,11 +1582,11 @@ function renderCompras(){
       <button class="lcheck ${c.done?'on':''}" data-action="toggle-compra" data-i="${i}">${c.done?'✓':''}</button>
       <span class="lname">${c.emoji||"🛒"} ${c.nome}</span>
       <div class="qty lqty" data-action="noop">
-        <button data-action="compra-qtd-dec" data-i="${i}" aria-label="menos">−</button>
-        <span class="qval"><b>${c.qtd||1}</b> <span class="qu">${c.unidade||"un"}</span></span>
-        <button data-action="compra-qtd-inc" data-i="${i}" aria-label="mais">＋</button>
+        <button data-action="compra-qtd-dec" data-i="${i}" aria-label="diminuir">−</button>
+        <input class="lqv-input" type="number" inputmode="decimal" min="0" step="${stepFor(c.unidade||'un')}" value="${c.qtd||1}" data-i="${i}" aria-label="quantidade">
+        <button data-action="compra-qtd-inc" data-i="${i}" aria-label="aumentar">＋</button>
+        <select class="unit-sel lunit" data-i="${i}" data-action="noop">${unitOptions(c.unidade||"un")}</select>
       </div>
-      ${c.cat?`<span class="ltag">${c.cat}</span>`:""}
       <button class="del-btn" data-action="del-compra" data-i="${i}">✕</button>
     </div>`).join("") : `<div class="empty"><span class="emj">🧾</span><h3>Lista vazia</h3><p>Adicione itens manualmente, pelo consumo da semana, pelas sugestões ou pelos itens que faltam no estoque.</p></div>`;
 
@@ -1547,7 +1595,6 @@ function renderCompras(){
   ${list.length?`<div class="stat-row">
     <div class="stat"><div class="lab">🛒 Itens</div><div class="num">${list.length}</div></div>
     <div class="stat"><div class="lab">✅ Comprados</div><div class="num">${done}<small>/${list.length}</small></div></div>
-    <div class="stat"><div class="lab">📦 Total a comprar</div><div class="num">${list.reduce((s,c)=>s+(c.qtd||1),0)}<small> un./porções</small></div></div>
   </div>`:""}
   <div class="toolbar">
     <div class="search"><span class="ic">＋</span><input id="compraInput" placeholder="Adicionar item (ex.: 4 batatas) e pressione Enter..."></div>
@@ -1666,9 +1713,14 @@ function addCompraById(id, qty){
   state.compras.push({id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"", done:false, qtd:qty, unidade:f?unitOf(id):"un"});
   save(); return true;
 }
-// atualiza só o número de quantidade no card do estoque, sem re-render (preserva scroll)
+// atualiza só o campo de quantidade no card do estoque, sem re-render (preserva scroll)
 function updateQtyUI(id){
-  document.querySelectorAll('.food[data-id="'+id+'"] .qv').forEach(el=> el.textContent = qtyOf(id));
+  document.querySelectorAll('.food[data-id="'+id+'"] .qv-input').forEach(el=>{ el.value = qtyOf(id); el.step = stepFor(unitOf(id)); });
+}
+// atualiza só o campo de quantidade de um item da lista de compras, sem re-render
+function updateCompraQtyUI(i){
+  const c=state.compras[i]; if(!c) return;
+  const el=document.querySelector('.lqv-input[data-i="'+i+'"]'); if(el) el.value=c.qtd;
 }
 
 const COMMON_ITEMS = ["paofrances","ovo","arroz","feijao","leite","cafe","manteiga","queijoprato","frango","macarrao","tomate","cebola","alho","banana","azeite","sal","oleo","acucar","molhotomate","aveia"];
@@ -1681,15 +1733,15 @@ const ACTIONS = {
   "noop":()=>{},
   "toggle-food":(d)=>{
     const id=d.id, i=state.estoque.indexOf(id);
-    if(i>=0){ state.estoque.splice(i,1); delete state.qtd[id]; }
+    if(i>=0){ state.estoque.splice(i,1); delete state.qtd[id]; delete state.unidade[id]; }
     else { state.estoque.push(id); if(state.qtd[id]==null) state.qtd[id]=1; }
     state.cardapio=null; save();
     // re-render leve do estoque (preserva scroll)
     if(currentTab==="estoque"){ patchEstoque(); } else render();
     renderNav();
   },
-  "qtd-inc":(d)=>{ if(!has(d.id)) return; state.qtd[d.id]=qtyOf(d.id)+1; save(); updateQtyUI(d.id); patchEstoqueStats(); },
-  "qtd-dec":(d)=>{ if(!has(d.id)) return; state.qtd[d.id]=Math.max(1,qtyOf(d.id)-1); save(); updateQtyUI(d.id); patchEstoqueStats(); },
+  "qtd-inc":(d)=>{ if(!has(d.id)) return; const st=stepFor(unitOf(d.id)); state.qtd[d.id]=Math.round((qtyOf(d.id)+st)*100)/100; save(); updateQtyUI(d.id); },
+  "qtd-dec":(d)=>{ if(!has(d.id)) return; const st=stepFor(unitOf(d.id)); state.qtd[d.id]=Math.max(0,Math.round((qtyOf(d.id)-st)*100)/100); save(); updateQtyUI(d.id); },
   "filter-cat":(d)=>{ estoqueCat=d.cat; render(); },
   "add-essentials":()=>{
     let added=0;
@@ -1697,7 +1749,7 @@ const ACTIONS = {
     state.cardapio=null; save(); render();
     toast(added?`${added} itens comuns adicionados`:"Você já tem os básicos", "✨");
   },
-  "clear-estoque":()=>{ if(confirm("Limpar todo o estoque?")){ state.estoque=[]; state.qtd={}; state.cardapio=null; save(); render(); toast("Estoque limpo","🗑️"); } },
+  "clear-estoque":()=>{ if(confirm("Limpar todo o estoque?")){ state.estoque=[]; state.qtd={}; state.unidade={}; state.cardapio=null; save(); render(); toast("Estoque limpo","🗑️"); } },
   "toggle-objetivo":(d)=>{ toggleArr(state.objetivos,d.id); save(); render(); },
   "toggle-restricao":(d)=>{ toggleArr(state.restricoes,d.id); state.cardapio=null; save(); render(); },
   "set-intensidade":(d)=>{ state.intensidade=d.id; state.cardapio=null; save(); render(); toast(`Perfil ${INTENS[d.id].nome} ativado`, INTENS[d.id].emj); },
@@ -1729,9 +1781,9 @@ const ACTIONS = {
     render(); renderNav(); toast(n?`${n} item(ns) na lista de compras`:"Já estavam na lista","🧾");
   },
   "add-compra-sug":(d)=>{ addCompraById(d.id,1); render(); renderNav(); toast("Adicionado à lista","🧾"); },
-  // adiciona à lista todos os itens em falta no consumo da semana, com a quantidade que falta
+  // adiciona à lista os itens em falta (cálculo exato) com a quantidade que falta
   "add-faltas":()=>{
-    const faltas=consumoSemana().filter(c=>c.falta>0); let n=0;
+    const faltas=consumoSemana().filter(c=>c.preciso && c.falta>0); let n=0;
     faltas.forEach(c=>{ if(addCompraById(c.id, c.falta)) n++; });
     save(); render(); renderNav();
     toast(faltas.length?`${faltas.length} item(ns) com quantidade adicionados`:"Nada faltando","🧾");
@@ -1742,12 +1794,12 @@ const ACTIONS = {
     const novo=addCompraById(d.id,1); render(); renderNav();
     toast(novo?"Adicionado à lista de compras":"Já está na lista","🛍️");
   },
-  "compra-qtd-inc":(d)=>{ const c=state.compras[+d.i]; if(c){ c.qtd=(c.qtd||1)+1; save(); render(); } },
-  "compra-qtd-dec":(d)=>{ const c=state.compras[+d.i]; if(c){ c.qtd=Math.max(1,(c.qtd||1)-1); save(); render(); } },
+  "compra-qtd-inc":(d)=>{ const i=+d.i,c=state.compras[i]; if(!c)return; const st=stepFor(c.unidade||'un'); c.qtd=Math.round(((c.qtd||1)+st)*100)/100; save(); updateCompraQtyUI(i); },
+  "compra-qtd-dec":(d)=>{ const i=+d.i,c=state.compras[i]; if(!c)return; const st=stepFor(c.unidade||'un'); c.qtd=Math.max(0,Math.round(((c.qtd||1)-st)*100)/100); save(); updateCompraQtyUI(i); },
   "add-compra-manual":()=>{
     const inp=document.getElementById("compraInput"); if(!inp) return;
     let v=inp.value.trim(); if(!v) return;
-    let qtd=1; const m=v.match(/^(\d+)\s+(.+)$/); if(m){ qtd=Math.max(1,+m[1]); v=m[2]; }
+    let qtd=1; const m=v.match(/^(\d+(?:[.,]\d+)?)\s+(.+)$/); if(m){ qtd=Math.max(0,parseFloat(m[1].replace(",","."))); v=m[2]; }
     state.compras.push({id:"manual_"+Date.now(), nome:v, emoji:"🛒", cat:"", done:false, qtd, unidade:"un"});
     save(); render(); renderNav();
   },
@@ -1769,15 +1821,14 @@ function patchEstoqueStats(){
   const statNums=content.querySelectorAll(".stat .num");
   if(statNums[0]) statNums[0].innerHTML=`${state.estoque.length}<small> itens</small>`;
   if(statNums[1]) statNums[1].innerHTML=`${getRecipes({mode:"makeable"}).length}<small> receitas</small>`;
-  if(statNums[2]) statNums[2].innerHTML=`${state.estoque.reduce((s,id)=>s+qtyOf(id),0)}<small> un./porções</small>`;
-  if(statNums[3]) statNums[3].textContent=new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size;
+  if(statNums[2]) statNums[2].textContent=new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size;
 }
 // patch só dos botões do estoque para preservar o scroll ao marcar itens
 function patchEstoque(){
   document.querySelectorAll(".food").forEach(btn=>{
     const id=btn.dataset.id;
     btn.classList.toggle("on", has(id));
-    const qv=btn.querySelector(".qv"); if(qv) qv.textContent=qtyOf(id);
+    const qv=btn.querySelector(".qv-input"); if(qv){ qv.value=qtyOf(id); qv.step=stepFor(unitOf(id)); }
   });
   patchEstoqueStats();
   // counts por categoria
@@ -1802,6 +1853,26 @@ document.addEventListener("input",(e)=>{
     const inp=document.getElementById("estoqueSearch"); if(inp){ inp.focus(); inp.setSelectionRange(estoqueSearch.length,estoqueSearch.length); } }
   if(e.target.id==="faltamSearch"){ faltamSearch=e.target.value; render();
     const inp=document.getElementById("faltamSearch"); if(inp){ inp.focus(); inp.setSelectionRange(faltamSearch.length,faltamSearch.length); } }
+  // quantidade editável no estoque (sem re-render, preserva foco)
+  if(e.target.classList.contains("qv-input")){
+    const id=e.target.dataset.id; const v=parseFloat(String(e.target.value).replace(",","."));
+    if(isNaN(v)) return; state.qtd[id]=Math.max(0,v); save();
+  }
+  // quantidade editável na lista de compras
+  if(e.target.classList.contains("lqv-input")){
+    const c=state.compras[+e.target.dataset.i]; if(!c) return;
+    const v=parseFloat(String(e.target.value).replace(",",".")); if(isNaN(v)) return; c.qtd=Math.max(0,v); save();
+  }
+});
+// troca de unidade de medida (estoque e lista de compras)
+document.addEventListener("change",(e)=>{
+  if(e.target.classList.contains("lunit")){
+    const c=state.compras[+e.target.dataset.i]; if(c){ c.unidade=e.target.value; save();
+      const inp=e.target.closest(".qty"); if(inp){ const f=inp.querySelector(".lqv-input"); if(f) f.step=stepFor(e.target.value); } }
+  } else if(e.target.classList.contains("unit-sel")){
+    const id=e.target.dataset.id; state.unidade[id]=e.target.value; save();
+    const inp=e.target.closest(".qty"); if(inp){ const f=inp.querySelector(".qv-input"); if(f) f.step=stepFor(e.target.value); }
+  }
 });
 document.addEventListener("keydown",(e)=>{
   if(e.key==="Enter" && e.target.id==="compraInput"){ e.preventDefault(); ACTIONS["add-compra-manual"](); }
