@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#16a34a">
+<title>NutriCasa — Planejador Alimentar Inteligente</title>
+<style>
+/* ============================================================
+   NUTRICASA — Design System
+   ============================================================ */
+:root{
+  --bg: #f4f6f4;
+  --bg-grad-1: #eef5ef;
+  --bg-grad-2: #f7f3 ;
+  --surface: #ffffff;
+  --surface-2: #f7faf7;
+  --surface-3: #eef2ee;
+  --border: #e3e8e3;
+  --text: #1c2620;
+  --text-soft: #5c6a60;
+  --text-faint: #93a097;
+  --accent: #16a34a;
+  --accent-d: #0f7a37;
+  --accent-l: #dcf5e6;
+  --accent-2: #0ea5a5;
+  --amber: #e08a1e;
+  --amber-l: #fcefd9;
+  --rose: #e2486b;
+  --rose-l: #fde2e9;
+  --violet:#7c5cff;
+  --violet-l:#ece7ff;
+  --shadow-sm: 0 1px 2px rgba(20,40,28,.06), 0 1px 3px rgba(20,40,28,.05);
+  --shadow-md: 0 4px 14px rgba(20,40,28,.08), 0 2px 6px rgba(20,40,28,.05);
+  --shadow-lg: 0 16px 40px rgba(20,40,28,.14), 0 6px 14px rgba(20,40,28,.08);
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --t: .22s cubic-bezier(.4,0,.2,1);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+[data-theme="dark"]{
+  --bg: #10140f;
+  --bg-grad-1: #131a13;
+  --bg-grad-2: #0e1410;
+  --surface: #1a211a;
+  --surface-2: #202a20;
+  --surface-3: #28332a;
+  --border: #2c382e;
+  --text: #e8efe9;
+  --text-soft: #a3b3a6;
+  --text-faint: #6f7e73;
+  --accent: #34d27e;
+  --accent-d: #25b369;
+  --accent-l: #18331f;
+  --accent-2: #2dd4d4;
+  --amber: #f0a942;
+  --amber-l: #352915;
+  --rose: #ff6b8a;
+  --rose-l: #361a22;
+  --violet:#9d83ff;
+  --violet-l:#231d3d;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.45);
+  --shadow-lg: 0 18px 44px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 90% -10%, var(--accent-l), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, var(--violet-l), transparent 55%),
+    linear-gradient(160deg, var(--bg-grad-1), var(--bg));
+  background-attachment: fixed;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.45;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit}
+::-webkit-scrollbar{height:9px;width:9px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:20px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-faint)}
+
+/* ===================== LAYOUT ===================== */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:248px;flex-shrink:0;position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;gap:6px;padding:20px 14px;
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(14px);
+  border-right:1px solid var(--border);
+}
+[data-theme="dark"] .sidebar{background:rgba(20,26,20,.55)}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 10px 16px}
+.brand-logo{
+  width:42px;height:42px;border-radius:13px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;font-size:23px;color:#fff;
+  box-shadow:0 6px 16px rgba(22,163,74,.35);
+}
+.brand-txt strong{display:block;font-size:16.5px;letter-spacing:-.4px}
+.brand-txt span{font-size:11.5px;color:var(--text-soft)}
+.nav{display:flex;flex-direction:column;gap:3px;overflow-y:auto;flex:1;margin:0 -4px;padding:0 4px}
+.nav::-webkit-scrollbar{width:0}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:13px;
+  font-size:14px;font-weight:550;color:var(--text-soft);
+  transition:var(--t);position:relative;text-align:left;width:100%;
+}
+.nav-item .ic{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.nav-item:hover{background:var(--surface-2);color:var(--text)}
+.nav-item.active{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(22,163,74,.32)}
+.nav-item.active .ic{transform:scale(1.05)}
+.nav-badge{
+  margin-left:auto;font-size:11px;font-weight:700;min-width:20px;height:20px;
+  padding:0 6px;border-radius:20px;background:var(--surface-3);color:var(--text-soft);
+  display:grid;place-items:center;
+}
+.nav-item.active .nav-badge{background:rgba(255,255,255,.25);color:#fff}
+.side-foot{padding:10px 8px 2px;border-top:1px solid var(--border);margin-top:6px}
+.theme-toggle{
+  display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border-radius:12px;
+  font-size:13px;font-weight:550;color:var(--text-soft);background:var(--surface-2);
+}
+.theme-toggle:hover{color:var(--text)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;
+  padding:14px 26px;background:rgba(255,255,255,.7);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+[data-theme="dark"] .topbar{background:rgba(16,20,15,.7)}
+.menu-btn{display:none;font-size:22px;width:40px;height:40px;border-radius:11px;background:var(--surface-2)}
+.topbar h1{font-size:19px;letter-spacing:-.5px;font-weight:750;flex-shrink:0}
+.topbar .sub{font-size:12.5px;color:var(--text-soft);margin-left:-6px;display:none}
+.top-spacer{flex:1}
+.intens-pill{
+  display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:30px;
+  font-size:13px;font-weight:650;background:var(--surface-2);border:1px solid var(--border);
+}
+.intens-dot{width:9px;height:9px;border-radius:50%}
+.content{padding:26px;max-width:1180px;width:100%;margin:0 auto;flex:1}
+.view{display:none;animation:fade .35s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ===================== HEADERS ===================== */
+.view-head{margin-bottom:20px}
+.view-head h2{font-size:25px;letter-spacing:-.6px;font-weight:780;display:flex;align-items:center;gap:11px}
+.view-head h2 .emj{font-size:26px}
+.view-head p{color:var(--text-soft);font-size:14.5px;margin-top:5px;max-width:680px}
+
+.section-title{font-size:15px;font-weight:700;margin:24px 0 12px;display:flex;align-items:center;gap:8px;letter-spacing:-.2px}
+.section-title .pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:var(--accent-l);color:var(--accent-d)}
+
+/* ===================== BUTTONS / CHIPS ===================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 18px;border-radius:13px;font-size:14px;font-weight:650;
+  background:var(--surface);border:1px solid var(--border);color:var(--text);
+  transition:var(--t);box-shadow:var(--shadow-sm);
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn:active{transform:translateY(0)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-d));color:#fff;border-color:transparent;box-shadow:0 8px 20px rgba(22,163,74,.3)}
+.btn-primary:hover{box-shadow:0 12px 26px rgba(22,163,74,.4)}
+.btn-ghost{background:var(--surface-2);box-shadow:none}
+.btn-sm{padding:8px 13px;font-size:13px;border-radius:11px}
+.btn-block{width:100%}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:30px;
+  font-size:13.5px;font-weight:600;background:var(--surface);border:1.5px solid var(--border);
+  color:var(--text-soft);transition:var(--t);user-select:none;
+}
+.chip:hover{border-color:var(--accent);color:var(--text)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(22,163,74,.3)}
+.chip .x{font-size:11px;opacity:.7}
+.chip-row{display:flex;flex-wrap:wrap;gap:9px}
+
+/* ===================== CARDS ===================== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);padding:20px}
+.grid{display:grid;gap:16px}
+.g-2{grid-template-columns:repeat(2,1fr)}
+.g-3{grid-template-columns:repeat(3,1fr)}
+.g-auto{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.g-auto-sm{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+
+/* ===================== STAT CARDS ===================== */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:8px}
+.stat{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:16px 17px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+}
+.stat .lab{font-size:12px;color:var(--text-soft);font-weight:600;display:flex;align-items:center;gap:6px}
+.stat .num{font-size:27px;font-weight:800;letter-spacing:-1px;margin-top:3px}
+.stat .num small{font-size:14px;color:var(--text-faint);font-weight:600}
+.stat .ic{position:absolute;right:-6px;top:-6px;font-size:46px;opacity:.08}
+
+/* ===================== ESTOQUE ===================== */
+.toolbar{
+  display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin-bottom:16px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 13px;box-shadow:var(--shadow-sm);
+}
+.search{flex:1;min-width:200px;display:flex;align-items:center;gap:9px;background:var(--surface-2);border-radius:11px;padding:9px 13px;border:1px solid transparent;transition:var(--t)}
+.search:focus-within{border-color:var(--accent);background:var(--surface)}
+.search input{border:none;background:none;outline:none;flex:1;font-size:14px;color:var(--text)}
+.search .ic{font-size:16px;color:var(--text-faint)}
+.cat-filter{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;margin-bottom:16px;scrollbar-width:none}
+.cat-filter::-webkit-scrollbar{display:none}
+.cat-pill{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:30px;
+  font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--border);color:var(--text-soft);transition:var(--t);
+}
+.cat-pill:hover{color:var(--text)}
+.cat-pill.on{background:var(--text);color:var(--surface);border-color:var(--text)}
+.cat-block{margin-bottom:26px}
+.cat-head{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+.cat-head .emj{font-size:21px}
+.cat-head h3{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.cat-head .count{font-size:12px;color:var(--text-soft);background:var(--surface-3);padding:2px 9px;border-radius:20px;font-weight:600}
+.food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+.food{
+  display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;
+  background:var(--surface);border:1.5px solid var(--border);transition:var(--t);
+  text-align:left;position:relative;overflow:hidden;
+}
+.food:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.food .emj{font-size:21px;flex-shrink:0;transition:var(--t)}
+.food .nm{font-size:13px;font-weight:600;line-height:1.2}
+.food.on{background:var(--accent-l);border-color:var(--accent)}
+[data-theme="dark"] .food.on{background:var(--accent-l)}
+.food.on .nm{color:var(--accent-d);font-weight:700}
+.food.on .emj{transform:scale(1.12)}
+.food .check{
+  position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:50%;
+  background:var(--accent);color:#fff;display:none;place-items:center;font-size:11px;font-weight:800;
+}
+.food.on .check{display:grid}
+
+/* ===================== PROFILE / INTENSITY ===================== */
+.intens-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.intens-card{
+  border:2px solid var(--border);border-radius:var(--r-lg);padding:22px;background:var(--surface);
+  cursor:pointer;transition:var(--t);position:relative;overflow:hidden;box-shadow:var(--shadow-sm);
+}
+.intens-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.intens-card .ribbon{position:absolute;inset:0 0 auto auto;width:120px;height:120px;border-radius:50%;filter:blur(34px);opacity:.18;transform:translate(35%,-35%)}
+.intens-card .emj{font-size:34px;display:block;margin-bottom:10px}
+.intens-card h3{font-size:19px;font-weight:760;letter-spacing:-.4px}
+.intens-card .tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;display:inline-block;margin:8px 0}
+.intens-card p{font-size:13.5px;color:var(--text-soft);line-height:1.5}
+.intens-card .feats{margin-top:13px;display:flex;flex-direction:column;gap:7px}
+.intens-card .feats div{font-size:12.5px;color:var(--text-soft);display:flex;gap:8px;align-items:center}
+.intens-card .feats div::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.intens-card.sel{border-color:var(--accent);background:var(--accent-l)}
+[data-theme="dark"] .intens-card.sel{background:var(--surface-2);border-color:var(--accent)}
+.intens-card .selbadge{position:absolute;top:14px;right:14px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:4px 11px;border-radius:20px;display:none;align-items:center;gap:5px}
+.intens-card.sel .selbadge{display:inline-flex}
+
+/* ===================== GOAL CARDS ===================== */
+.goal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.goal{
+  border:1.5px solid var(--border);border-radius:var(--r-md);padding:15px;background:var(--surface);
+  transition:var(--t);text-align:left;display:flex;flex-direction:column;gap:6px;
+}
+.goal:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.goal .emj{font-size:25px}
+.goal .nm{font-size:14px;font-weight:680}
+.goal .ds{font-size:11.5px;color:var(--text-soft)}
+.goal.on{border-color:var(--accent);background:var(--accent-l)}
+[data-theme="dark"] .goal.on{background:var(--surface-2)}
+.goal.on .nm{color:var(--accent-d)}
+
+/* ===================== METAS / PROGRESS ===================== */
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px}
+.meta-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;box-shadow:var(--shadow-sm);text-align:center}
+.ring{position:relative;width:84px;height:84px;margin:0 auto 8px}
+.ring svg{transform:rotate(-90deg)}
+.ring .val{position:absolute;inset:0;display:grid;place-items:center;font-size:18px;font-weight:800}
+.meta-card .lab{font-size:13px;font-weight:650}
+.meta-card .sub{font-size:11px;color:var(--text-soft)}
+.meta-ctrl{display:flex;gap:7px;justify-content:center;margin-top:10px}
+.meta-ctrl button{width:30px;height:30px;border-radius:9px;background:var(--surface-2);font-size:17px;font-weight:700;color:var(--text-soft);transition:var(--t)}
+.meta-ctrl button:hover{background:var(--accent);color:#fff}
+.progress-bar{height:8px;border-radius:20px;background:var(--surface-3);overflow:hidden;margin-top:9px}
+.progress-bar > div{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* ===================== TIMELINE / CRONOGRAMA ===================== */
+.timeline{position:relative;padding-left:42px}
+.timeline::before{content:"";position:absolute;left:15px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--accent),var(--accent-2),transparent)}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-dot{position:absolute;left:-34px;top:4px;width:32px;height:32px;border-radius:10px;background:var(--surface);border:2px solid var(--accent);display:grid;place-items:center;font-size:15px;box-shadow:var(--shadow-sm);z-index:1}
+.tl-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-sm);transition:var(--t)}
+.tl-card:hover{box-shadow:var(--shadow-md)}
+.tl-time{font-size:12px;font-weight:700;color:var(--accent-d);letter-spacing:.3px}
+.tl-meal{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-faint)}
+.tl-card h4{font-size:16px;font-weight:700;margin:3px 0 4px;letter-spacing:-.3px}
+.tl-ings{font-size:12.5px;color:var(--text-soft)}
+.tl-foot{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.tl-meta{font-size:11.5px;color:var(--text-faint);display:inline-flex;align-items:center;gap:4px}
+
+/* ===================== RECIPE CARDS ===================== */
+.rec-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;
+  box-shadow:var(--shadow-sm);transition:var(--t);display:flex;flex-direction:column;
+}
+.rec-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.rec-thumb{height:96px;display:grid;place-items:center;font-size:46px;position:relative;background:var(--surface-2)}
+.rec-fav{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.85);display:grid;place-items:center;font-size:16px;transition:var(--t);box-shadow:var(--shadow-sm)}
+[data-theme="dark"] .rec-fav{background:rgba(0,0,0,.4)}
+.rec-fav:hover{transform:scale(1.12)}
+.rec-fav.on{color:var(--rose)}
+.match-tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;color:#fff;display:inline-flex;align-items:center;gap:5px}
+.rec-body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column}
+.rec-body h4{font-size:15.5px;font-weight:720;letter-spacing:-.3px}
+.rec-meta{display:flex;gap:12px;margin:7px 0 10px;flex-wrap:wrap}
+.rec-meta span{font-size:11.5px;color:var(--text-soft);display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.rec-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px}
+.rtag{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:7px;background:var(--surface-3);color:var(--text-soft)}
+.rtag.miss{background:var(--amber-l);color:var(--amber)}
+.rec-foot{margin-top:auto;display:flex;gap:8px}
+.miss-note{font-size:11.5px;color:var(--amber);font-weight:600;margin-bottom:9px;display:flex;align-items:flex-start;gap:5px}
+
+/* ===================== SHOPPING / SUBS / LISTS ===================== */
+.list-item{
+  display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--shadow-sm);transition:var(--t);margin-bottom:9px;
+}
+.list-item:hover{box-shadow:var(--shadow-md)}
+.lcheck{width:24px;height:24px;border-radius:8px;border:2px solid var(--border);flex-shrink:0;display:grid;place-items:center;transition:var(--t);font-size:13px;color:#fff}
+.lcheck.on{background:var(--accent);border-color:var(--accent)}
+.list-item.done .lname{text-decoration:line-through;color:var(--text-faint)}
+.lname{flex:1;font-size:14.5px;font-weight:600}
+.ltag{font-size:11px;color:var(--text-soft);background:var(--surface-3);padding:3px 9px;border-radius:20px;font-weight:600}
+.del-btn{width:32px;height:32px;border-radius:9px;color:var(--text-faint);font-size:16px;transition:var(--t)}
+.del-btn:hover{background:var(--rose-l);color:var(--rose)}
+
+.sub-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;box-shadow:var(--shadow-sm);transition:var(--t)}
+.sub-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.sub-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sub-from,.sub-to{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:11px;font-size:13.5px;font-weight:650}
+.sub-from{background:var(--rose-l);color:var(--rose)}
+.sub-to{background:var(--accent-l);color:var(--accent-d)}
+.sub-arrow{font-size:17px;color:var(--text-faint)}
+.sub-why{font-size:12.5px;color:var(--text-soft);margin-top:10px;line-height:1.5}
+
+/* ===================== STRATEGY CARDS ===================== */
+.strat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-sm);transition:var(--t)}
+.strat-card:hover{box-shadow:var(--shadow-md)}
+.strat-card .head{display:flex;align-items:center;gap:13px;margin-bottom:13px}
+.strat-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;flex-shrink:0}
+.strat-card h3{font-size:16.5px;font-weight:730;letter-spacing:-.3px}
+.strat-card .sub{font-size:12px;color:var(--text-soft)}
+.strat-list{display:flex;flex-direction:column;gap:10px}
+.strat-list li{list-style:none;display:flex;gap:10px;font-size:13.5px;color:var(--text-soft);line-height:1.5}
+.strat-list li .b{flex-shrink:0;width:22px;height:22px;border-radius:7px;background:var(--accent-l);color:var(--accent-d);display:grid;place-items:center;font-size:12px;font-weight:800;margin-top:1px}
+
+/* ===================== WEEK GRID ===================== */
+.week-scroll{overflow-x:auto;padding-bottom:6px}
+.week-grid{display:grid;grid-template-columns:90px repeat(7,minmax(140px,1fr));gap:8px;min-width:760px}
+.wk-cell{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 10px;font-size:12px;min-height:46px}
+.wk-head{font-weight:800;text-align:center;background:var(--text);color:var(--surface);border-color:var(--text);display:grid;place-items:center;font-size:12.5px}
+.wk-label{font-weight:700;display:flex;align-items:center;justify-content:flex-start;background:var(--surface-2);color:var(--text-soft);font-size:11.5px}
+.wk-cell .meal{font-weight:650;line-height:1.25}
+.wk-cell.empty{color:var(--text-faint);font-style:italic}
+
+/* ===================== EMPTY STATES ===================== */
+.empty{text-align:center;padding:54px 20px;color:var(--text-soft)}
+.empty .emj{font-size:54px;display:block;margin-bottom:14px;opacity:.85}
+.empty h3{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px}
+.empty p{font-size:14px;max-width:420px;margin:0 auto 18px}
+
+/* ===================== MODAL ===================== */
+.modal-bg{position:fixed;inset:0;background:rgba(15,25,18,.55);backdrop-filter:blur(4px);z-index:100;display:none;place-items:center;padding:20px;animation:fade .2s}
+.modal-bg.show{display:grid}
+.modal{background:var(--surface);border-radius:var(--r-xl);max-width:560px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:pop .3s cubic-bezier(.34,1.4,.5,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-thumb{height:120px;display:grid;place-items:center;font-size:60px;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.modal-body{padding:22px 24px 26px}
+.modal-body h2{font-size:22px;font-weight:780;letter-spacing:-.5px}
+.modal-close{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center;font-size:18px;box-shadow:var(--shadow-sm);z-index:2}
+[data-theme="dark"] .modal-close{background:rgba(0,0,0,.5)}
+.ing-list{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.ing-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;background:var(--surface-2);font-size:13.5px}
+.ing-row .st{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+.ing-row .st.have{background:var(--accent-l);color:var(--accent-d)}
+.ing-row .st.miss{background:var(--amber-l);color:var(--amber)}
+.step-list{counter-reset:s;display:flex;flex-direction:column;gap:11px;margin-top:6px}
+.step-list li{list-style:none;display:flex;gap:12px;font-size:14px;color:var(--text-soft);line-height:1.5}
+.step-list li::before{counter-increment:s;content:counter(s);flex-shrink:0;width:26px;height:26px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
+
+/* ===================== TOAST ===================== */
+.toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:9px;align-items:center;pointer-events:none}
+.toast{background:var(--text);color:var(--surface);padding:12px 20px;border-radius:30px;font-size:13.5px;font-weight:650;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px;animation:toastIn .3s cubic-bezier(.34,1.4,.5,1)}
+@keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.toast .ic{font-size:16px}
+
+/* ===================== MISC ===================== */
+.divider{height:1px;background:var(--border);margin:22px 0}
+.muted{color:var(--text-soft)}
+.banner{
+  display:flex;align-items:center;gap:14px;padding:15px 18px;border-radius:var(--r-md);
+  background:linear-gradient(120deg,var(--accent-l),var(--violet-l));border:1px solid var(--border);margin-bottom:18px;
+}
+.banner .emj{font-size:28px}
+.banner h4{font-size:15px;font-weight:720}
+.banner p{font-size:13px;color:var(--text-soft)}
+.fab-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tab-scrim{display:none}
+
+/* ===================== RESPONSIVE ===================== */
+@media(max-width:880px){
+  .intens-grid{grid-template-columns:1fr}
+  .g-2,.g-3{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .sidebar{
+    position:fixed;left:0;top:0;z-index:60;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+    box-shadow:var(--shadow-lg);background:var(--surface);
+  }
+  .sidebar.open{transform:none}
+  .tab-scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55;display:none}
+  .tab-scrim.show{display:block}
+  .menu-btn{display:grid;place-items:center}
+  .content{padding:18px 16px}
+  .topbar{padding:12px 16px}
+  .topbar h1{font-size:17px}
+  .intens-pill span.lbl{display:none}
+  .view-head h2{font-size:22px}
+}
+@media(min-width:1100px){.topbar .sub{display:block}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🥗</div>
+      <div class="brand-txt">
+        <strong>NutriCasa</strong>
+        <span>Planejador inteligente</span>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <button class="theme-toggle" data-action="toggle-theme">
+        <span id="themeIc">🌙</span><span id="themeLbl">Modo escuro</span>
+      </button>
+    </div>
+  </aside>
+  <div class="tab-scrim" id="scrim" data-action="close-menu"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" data-action="open-menu">☰</button>
+      <h1 id="topTitle">Meu Estoque</h1>
+      <span class="sub" id="topSub">O que você tem em casa hoje?</span>
+      <div class="top-spacer"></div>
+      <button class="intens-pill" data-action="nav" data-tab="intensidade" title="Trocar intensidade">
+        <span class="intens-dot" id="intensDot"></span>
+        <span class="lbl">Perfil:</span> <strong id="intensName">Moderado</strong>
+      </button>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<!-- ===================== MODAL ===================== -->
+<div class="modal-bg" id="modalBg" data-action="close-modal">
+  <div class="modal" id="modal" onclick="event.stopPropagation()"></div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   NUTRICASA — App Logic
+   ============================================================ */
+
+/* ---------- FOOD DATABASE ---------- */
+// id, nome, emoji, cat, props (tags p/ lógica nutricional)
+const FOODS = [
+  // FRUTAS
+  ["banana","Banana","🍌","Frutas",["fruta","carbo"]],
+  ["maca","Maçã","🍎","Frutas",["fruta","fibra","lowcal"]],
+  ["laranja","Laranja","🍊","Frutas",["fruta","lowcal"]],
+  ["mamao","Mamão","🫐","Frutas",["fruta","fibra","lowcal"]],
+  ["morango","Morango","🍓","Frutas",["fruta","lowcal"]],
+  ["abacaxi","Abacaxi","🍍","Frutas",["fruta","lowcal"]],
+  ["uva","Uva","🍇","Frutas",["fruta","carbo"]],
+  ["melancia","Melancia","🍉","Frutas",["fruta","lowcal"]],
+  ["abacate","Abacate","🥑","Frutas",["fruta","gordura"]],
+  ["limao","Limão","🍋","Frutas",["fruta","lowcal","tempero"]],
+  ["pera","Pera","🍐","Frutas",["fruta","fibra","lowcal"]],
+  ["manga","Manga","🥭","Frutas",["fruta","carbo"]],
+  // VERDURAS
+  ["alface","Alface","🥬","Verduras",["vegetal","lowcal","fibra"]],
+  ["couve","Couve","🥬","Verduras",["vegetal","lowcal","fibra"]],
+  ["rucula","Rúcula","🌿","Verduras",["vegetal","lowcal"]],
+  ["espinafre","Espinafre","🌱","Verduras",["vegetal","lowcal","fibra"]],
+  ["agriao","Agrião","🌿","Verduras",["vegetal","lowcal"]],
+  ["repolho","Repolho","🥬","Verduras",["vegetal","lowcal","fibra"]],
+  ["brocolis","Brócolis","🥦","Verduras",["vegetal","lowcal","fibra"]],
+  // LEGUMES
+  ["tomate","Tomate","🍅","Legumes",["vegetal","lowcal"]],
+  ["cebola","Cebola","🧅","Legumes",["vegetal","tempero"]],
+  ["cenoura","Cenoura","🥕","Legumes",["vegetal","fibra"]],
+  ["pepino","Pepino","🥒","Legumes",["vegetal","lowcal"]],
+  ["abobrinha","Abobrinha","🥒","Legumes",["vegetal","lowcal"]],
+  ["pimentao","Pimentão","🫑","Legumes",["vegetal","lowcal"]],
+  ["beterraba","Beterraba","🟣","Legumes",["vegetal","fibra"]],
+  ["chuchu","Chuchu","🥒","Legumes",["vegetal","lowcal"]],
+  ["abobora","Abóbora","🎃","Legumes",["vegetal","carbo"]],
+  ["milho","Milho","🌽","Legumes",["vegetal","carbo"]],
+  ["vagem","Vagem","🫛","Legumes",["vegetal","lowcal","fibra"]],
+  // PROTEÍNAS ANIMAIS
+  ["frango","Peito de frango","🍗","Proteínas animais",["proteina","frango"]],
+  ["coxa","Coxa de frango","🍗","Proteínas animais",["proteina","frango"]],
+  ["carne","Carne bovina (bife)","🥩","Proteínas animais",["proteina","carne"]],
+  ["carnemoida","Carne moída","🥩","Proteínas animais",["proteina","carne"]],
+  ["peixe","Peixe (filé)","🐟","Proteínas animais",["proteina","peixe"]],
+  ["atum","Atum em lata","🐟","Proteínas animais",["proteina","peixe","conserva"]],
+  ["sardinha","Sardinha em lata","🐟","Proteínas animais",["proteina","peixe","conserva"]],
+  ["porco","Carne suína","🐖","Proteínas animais",["proteina","carne"]],
+  ["camarao","Camarão","🦐","Proteínas animais",["proteina","peixe"]],
+  // OVOS
+  ["ovo","Ovos","🥚","Ovos",["proteina","ovo"]],
+  ["ovocodorna","Ovo de codorna","🥚","Ovos",["proteina","ovo"]],
+  // FRIOS
+  ["presunto","Presunto","🥓","Frios",["proteina","processado","lactose"]],
+  ["peitoperu","Peito de peru","🦃","Frios",["proteina","processado"]],
+  ["mortadela","Mortadela","🍖","Frios",["proteina","processado"]],
+  ["salame","Salame","🍖","Frios",["proteina","processado","gordura"]],
+  ["blanquet","Blanquet de peru","🦃","Frios",["proteina","processado"]],
+  // QUEIJOS
+  ["mussarela","Mussarela","🧀","Queijos",["proteina","lactose","gordura"]],
+  ["queijoprato","Queijo prato","🧀","Queijos",["proteina","lactose","gordura"]],
+  ["queijobranco","Queijo branco","🧀","Queijos",["proteina","lactose"]],
+  ["requeijao","Requeijão","🧀","Queijos",["lactose","gordura"]],
+  ["parmesao","Parmesão","🧀","Queijos",["proteina","lactose","gordura"]],
+  ["coalho","Queijo coalho","🧀","Queijos",["proteina","lactose"]],
+  // LATICÍNIOS
+  ["leite","Leite","🥛","Laticínios",["lactose","proteina"]],
+  ["iogurte","Iogurte natural","🥛","Laticínios",["lactose","proteina"]],
+  ["iogurtegrego","Iogurte grego","🥛","Laticínios",["lactose","proteina"]],
+  ["manteiga","Manteiga","🧈","Laticínios",["gordura","lactose"]],
+  ["cremeleite","Creme de leite","🥛","Laticínios",["lactose","gordura"]],
+  ["leitecondensado","Leite condensado","🥛","Laticínios",["lactose","acucar"]],
+  // PÃES
+  ["paofrances","Pão francês","🥖","Pães",["carbo","gluten"]],
+  ["paoforma","Pão de forma","🍞","Pães",["carbo","gluten"]],
+  ["paointegral","Pão integral","🍞","Pães",["carbo","gluten","fibra"]],
+  ["paoqueijo","Pão de queijo","🧀","Pães",["carbo","lactose"]],
+  ["torrada","Torrada","🍞","Pães",["carbo","gluten"]],
+  ["tapioca","Tapioca (goma)","⚪","Pães",["carbo"]],
+  ["wrap","Wrap / Rap10","🌯","Pães",["carbo","gluten"]],
+  // MASSAS
+  ["macarrao","Macarrão","🍝","Massas",["carbo","gluten"]],
+  ["macarraoinst","Macarrão instantâneo","🍜","Massas",["carbo","gluten","processado"]],
+  ["nhoque","Nhoque","🥟","Massas",["carbo","gluten"]],
+  ["lasanha","Massa de lasanha","🍝","Massas",["carbo","gluten"]],
+  // GRÃOS
+  ["grabico","Grão-de-bico","🟤","Grãos",["proteina","fibra","carbo"]],
+  ["lentilha","Lentilha","🟤","Grãos",["proteina","fibra","carbo"]],
+  ["ervilha","Ervilha","🟢","Grãos",["proteina","fibra"]],
+  ["quinoa","Quinoa","🌾","Grãos",["proteina","fibra","carbo"]],
+  ["soja","Soja / Proteína de soja","🫘","Grãos",["proteina","fibra"]],
+  // ARROZ
+  ["arroz","Arroz branco","🍚","Arroz",["carbo"]],
+  ["arrozintegral","Arroz integral","🍚","Arroz",["carbo","fibra"]],
+  // FEIJÕES
+  ["feijao","Feijão carioca","🫘","Feijões",["proteina","fibra","carbo"]],
+  ["feijaopreto","Feijão preto","🫘","Feijões",["proteina","fibra","carbo"]],
+  // TUBÉRCULOS
+  ["batata","Batata","🥔","Tubérculos",["carbo"]],
+  ["batatadoce","Batata-doce","🍠","Tubérculos",["carbo","fibra"]],
+  ["mandioca","Mandioca","🥔","Tubérculos",["carbo"]],
+  ["inhame","Inhame","🥔","Tubérculos",["carbo","fibra"]],
+  ["mandioquinha","Mandioquinha","🥔","Tubérculos",["carbo"]],
+  // CEREAIS
+  ["aveia","Aveia","🥣","Cereais",["carbo","fibra"]],
+  ["granola","Granola","🥣","Cereais",["carbo","fibra"]],
+  ["flococerea","Sucrilhos / Flocos","🥣","Cereais",["carbo","acucar"]],
+  ["flocaomilho","Flocão de milho (cuscuz)","🌽","Cereais",["carbo"]],
+  ["chia","Chia","⚫","Cereais",["fibra","gordura"]],
+  ["linhaca","Linhaça","🟤","Cereais",["fibra","gordura"]],
+  // EMBUTIDOS
+  ["linguica","Linguiça","🌭","Embutidos",["proteina","carne","gordura","processado"]],
+  ["salsicha","Salsicha","🌭","Embutidos",["proteina","processado"]],
+  ["bacon","Bacon","🥓","Embutidos",["gordura","carne","processado"]],
+  ["calabresa","Calabresa","🌭","Embutidos",["proteina","carne","gordura","processado"]],
+  // CONGELADOS
+  ["nuggets","Nuggets","🍗","Congelados",["proteina","processado","frango"]],
+  ["hamburguer","Hambúrguer congelado","🍔","Congelados",["proteina","carne","processado"]],
+  ["batatacongelada","Batata congelada","🍟","Congelados",["carbo","processado"]],
+  ["pizzacongelada","Pizza congelada","🍕","Congelados",["carbo","processado","lactose"]],
+  ["polpafruta","Polpa de fruta","🧊","Congelados",["fruta"]],
+  // TEMPEROS
+  ["alho","Alho","🧄","Temperos",["tempero"]],
+  ["sal","Sal","🧂","Temperos",["tempero"]],
+  ["pimenta","Pimenta-do-reino","🌶️","Temperos",["tempero"]],
+  ["oregano","Orégano","🌿","Temperos",["tempero"]],
+  ["salsinha","Salsinha / Cheiro-verde","🌿","Temperos",["tempero"]],
+  ["cominho","Cominho","🟤","Temperos",["tempero"]],
+  ["colorau","Colorau / Páprica","🔴","Temperos",["tempero"]],
+  ["caldo","Caldo de galinha","🧊","Temperos",["tempero","processado"]],
+  ["canela","Canela","🟤","Temperos",["tempero"]],
+  // CONSERVAS
+  ["milhocons","Milho em lata","🌽","Conservas",["vegetal","conserva"]],
+  ["ervilhacons","Ervilha em lata","🟢","Conservas",["vegetal","conserva"]],
+  ["azeitona","Azeitona","🫒","Conservas",["gordura","conserva"]],
+  ["palmito","Palmito","🥫","Conservas",["vegetal","conserva","lowcal"]],
+  ["molhotomate","Molho de tomate","🥫","Conservas",["vegetal","conserva"]],
+  ["seleta","Seleta de legumes","🥫","Conservas",["vegetal","conserva"]],
+  // BEBIDAS
+  ["agua","Água","💧","Bebidas",["bebida"]],
+  ["refrigerante","Refrigerante","🥤","Bebidas",["bebida","acucar","processado"]],
+  ["suco","Suco de caixinha","🧃","Bebidas",["bebida","acucar"]],
+  ["sucopo","Suco em pó","🧃","Bebidas",["bebida","acucar"]],
+  ["aguacoco","Água de coco","🥥","Bebidas",["bebida"]],
+  ["leitevegetal","Leite vegetal","🥛","Bebidas",["bebida"]],
+  // CAFÉS
+  ["cafe","Café","☕","Cafés",["bebida"]],
+  ["cafesoluvel","Café solúvel","☕","Cafés",["bebida"]],
+  ["capuccino","Cappuccino","☕","Cafés",["bebida","acucar","lactose"]],
+  // CHÁS
+  ["chaverde","Chá verde","🍵","Chás",["bebida"]],
+  ["chamomila","Camomila","🍵","Chás",["bebida"]],
+  ["chamate","Chá mate","🧉","Chás",["bebida"]],
+  ["hibisco","Chá de hibisco","🍵","Chás",["bebida"]],
+  // DOCES
+  ["chocolate","Chocolate","🍫","Doces",["acucar","gordura","processado"]],
+  ["brigadeiro","Brigadeiro","🍫","Doces",["acucar","lactose"]],
+  ["docedeleite","Doce de leite","🍮","Doces",["acucar","lactose"]],
+  ["geleia","Geleia","🍯","Doces",["acucar"]],
+  ["mel","Mel","🍯","Doces",["acucar"]],
+  ["acucar","Açúcar","🧂","Doces",["acucar"]],
+  // SOBREMESAS
+  ["gelatina","Gelatina","🍮","Sobremesas",["acucar"]],
+  ["pudim","Pudim","🍮","Sobremesas",["acucar","lactose"]],
+  ["sorvete","Sorvete","🍦","Sobremesas",["acucar","lactose"]],
+  ["bolo","Bolo","🍰","Sobremesas",["acucar","gluten","lactose"]],
+  // SNACKS
+  ["pipoca","Milho de pipoca","🍿","Snacks",["carbo","fibra"]],
+  ["castanha","Castanhas / Nozes","🥜","Snacks",["gordura","proteina","oleaginosa"]],
+  ["amendoim","Amendoim","🥜","Snacks",["gordura","proteina","oleaginosa"]],
+  ["salgadinho","Salgadinho de pacote","🍟","Snacks",["carbo","processado"]],
+  ["barrinha","Barrinha de cereal","🍫","Snacks",["carbo","acucar"]],
+  // INDUSTRIALIZADOS
+  ["bolacha","Bolacha / Biscoito","🍪","Industrializados",["carbo","gluten","processado"]],
+  ["bolacharecheada","Bolacha recheada","🍪","Industrializados",["acucar","gluten","processado"]],
+  ["miojo","Tempero pronto","🧂","Industrializados",["tempero","processado"]],
+  ["maionese","Maionese","🥫","Industrializados",["gordura","processado"]],
+  ["ketchup","Ketchup","🍅","Industrializados",["acucar","processado"]],
+  ["margarina","Margarina","🧈","Industrializados",["gordura","processado"]],
+  // INGREDIENTES
+  ["azeite","Azeite","🫒","Ingredientes",["gordura"]],
+  ["oleo","Óleo","🛢️","Ingredientes",["gordura"]],
+  ["farinha","Farinha de trigo","🌾","Ingredientes",["carbo","gluten"]],
+  ["farinhamandioca","Farinha de mandioca","🌾","Ingredientes",["carbo"]],
+  ["fermento","Fermento","🧁","Ingredientes",["ingrediente"]],
+  ["vinagre","Vinagre","🧴","Ingredientes",["tempero"]],
+  ["amido","Amido de milho","🌽","Ingredientes",["carbo"]],
+  ["cacau","Cacau em pó","🍫","Ingredientes",["ingrediente"]],
+  ["pastaamendoim","Pasta de amendoim","🥜","Ingredientes",["gordura","proteina","oleaginosa"]],
+];
+const FOOD_MAP = Object.fromEntries(FOODS.map(f=>[f[0],{id:f[0],nome:f[1],emoji:f[2],cat:f[3],props:f[4]}]));
+const CATS = [...new Set(FOODS.map(f=>f[3]))];
+const CAT_EMOJI = {
+  "Frutas":"🍎","Verduras":"🥬","Legumes":"🥕","Proteínas animais":"🍗","Ovos":"🥚",
+  "Frios":"🥓","Queijos":"🧀","Laticínios":"🥛","Pães":"🍞","Massas":"🍝","Grãos":"🌾",
+  "Arroz":"🍚","Feijões":"🫘","Tubérculos":"🥔","Cereais":"🥣","Embutidos":"🌭",
+  "Congelados":"🧊","Temperos":"🧂","Conservas":"🥫","Bebidas":"🥤","Cafés":"☕",
+  "Chás":"🍵","Doces":"🍬","Sobremesas":"🍰","Snacks":"🍿","Industrializados":"🛒","Ingredientes":"🥄"
+};
+
+/* ---------- RECIPES ---------- */
+// tipo: cafe/almoco/lanche/jantar/ceia | intens: quais perfis | ess: essenciais | opt: opcionais
+// difTags p/ restrições derivam dos ingredientes
+const RECIPES = [
+  // CAFÉ DA MANHÃ
+  {id:"ovos-queijo",nome:"Ovos mexidos com queijo",emj:"🍳",tipo:["cafe"],intens:["intenso","moderado","leve"],tempo:8,kcal:240,ess:["ovo"],opt:["mussarela","queijoprato","requeijao","sal"],passos:["Bata os ovos com uma pitada de sal.","Aqueça a frigideira em fogo médio.","Despeje os ovos e mexa lentamente.","Adicione o queijo no fim e sirva."],desc:"Proteico e rápido para começar bem o dia."},
+  {id:"tapioca-recheada",nome:"Tapioca recheada",emj:"⚪",tipo:["cafe","lanche"],intens:["intenso","moderado","leve"],tempo:10,kcal:260,ess:["tapioca"],opt:["queijobranco","frango","ovo","requeijao","peitoperu"],passos:["Peneire a goma na frigideira quente.","Espalhe formando um disco.","Quando soltar, vire e adicione o recheio.","Dobre ao meio e sirva."],desc:"Sem glúten e versátil — combine com o que tiver."},
+  {id:"pao-ovo",nome:"Pão com ovo",emj:"🥪",tipo:["cafe","lanche"],intens:["moderado","leve"],tempo:8,kcal:300,ess:["paofrances","ovo"],opt:["manteiga","queijoprato","tomate"],passos:["Frite ou faça o ovo na chapa.","Aqueça o pão.","Monte o sanduíche e sirva quente."],desc:"O clássico café da manhã brasileiro."},
+  {id:"iogurte-fruta",nome:"Iogurte com fruta e aveia",emj:"🥣",tipo:["cafe","lanche","ceia"],intens:["intenso","moderado","leve"],tempo:5,kcal:210,ess:["iogurte"],opt:["banana","morango","aveia","granola","mel","chia"],passos:["Coloque o iogurte numa tigela.","Adicione a fruta picada.","Finalize com aveia ou granola."],desc:"Leve, refrescante e cheio de fibras."},
+  {id:"vitamina-banana",nome:"Vitamina de banana",emj:"🥤",tipo:["cafe","lanche"],intens:["moderado","leve"],tempo:5,kcal:230,ess:["leite","banana"],opt:["aveia","mel","leitevegetal","pastaamendoim"],passos:["Bata o leite com a banana no liquidificador.","Adicione aveia para dar consistência.","Sirva gelado."],desc:"Energia rápida antes da correria."},
+  {id:"crepioca",nome:"Crepioca proteica",emj:"🟡",tipo:["cafe","lanche","jantar"],intens:["intenso","moderado","leve"],tempo:10,kcal:220,ess:["ovo","tapioca"],opt:["queijobranco","frango","requeijao","oregano"],passos:["Misture o ovo com a goma de tapioca.","Despeje na frigideira antiaderente.","Recheie, dobre e sirva."],desc:"A queridinha low carb e proteica."},
+  {id:"omelete-legumes",nome:"Omelete de legumes",emj:"🍳",tipo:["cafe","jantar"],intens:["intenso","moderado","leve"],tempo:12,kcal:200,ess:["ovo"],opt:["tomate","cebola","queijobranco","espinafre","oregano","sal"],passos:["Bata os ovos com sal.","Refogue os legumes picados.","Despeje os ovos e cozinhe em fogo baixo.","Dobre ao meio e sirva."],desc:"Baixa caloria e muita saciedade."},
+  {id:"mingau-aveia",nome:"Mingau de aveia",emj:"🥣",tipo:["cafe","ceia"],intens:["moderado","leve"],tempo:8,kcal:240,ess:["aveia","leite"],opt:["banana","canela","mel","cacau"],passos:["Misture a aveia com o leite numa panela.","Mexa em fogo baixo até engrossar.","Finalize com canela e fruta."],desc:"Conforto quentinho e fibras de manhã."},
+  {id:"cuscuz-ovo",nome:"Cuscuz com ovo",emj:"🌽",tipo:["cafe"],intens:["moderado","leve"],tempo:12,kcal:280,ess:["flocaomilho"],opt:["ovo","coalho","manteiga","sal"],passos:["Hidrate o flocão com água e sal.","Cozinhe na cuscuzeira ou no micro-ondas.","Sirva com ovo e um fio de manteiga."],desc:"Café da manhã nordestino que sustenta."},
+  {id:"panqueca-banana",nome:"Panqueca de banana",emj:"🥞",tipo:["cafe","lanche"],intens:["moderado","leve"],tempo:12,kcal:250,ess:["banana","ovo"],opt:["aveia","canela","mel"],passos:["Amasse a banana e misture com o ovo.","Adicione aveia até dar liga.","Doure dos dois lados na frigideira."],desc:"Sem farinha, doce na medida certa."},
+  {id:"pao-requeijao-peru",nome:"Pão integral com peito de peru",emj:"🥪",tipo:["cafe","lanche"],intens:["intenso","moderado","leve"],tempo:5,kcal:230,ess:["paointegral"],opt:["requeijao","peitoperu","queijobranco","tomate","alface"],passos:["Passe requeijão no pão.","Monte com peito de peru e folhas.","Sirva fresco."],desc:"Leve, prático e proteico."},
+
+  // ALMOÇO
+  {id:"prato-feito",nome:"Prato feito completo",emj:"🍛",tipo:["almoco"],intens:["moderado","leve"],tempo:35,kcal:550,ess:["arroz","feijao","frango"],opt:["alface","tomate","cebola","alho","cenoura","sal"],passos:["Cozinhe o arroz soltinho.","Refogue o feijão temperado.","Grelhe o frango temperado.","Monte com salada fresca ao lado."],desc:"O equilíbrio clássico do prato brasileiro."},
+  {id:"strogonoff",nome:"Strogonoff de frango",emj:"🍲",tipo:["almoco","jantar"],intens:["leve","moderado"],tempo:30,kcal:600,ess:["frango","cremeleite"],opt:["molhotomate","cebola","alho","arroz","ketchup","batatacongelada"],passos:["Doure o frango em cubos com cebola e alho.","Adicione molho de tomate e refogue.","Acrescente o creme de leite e desligue.","Sirva com arroz."],desc:"Cremoso e reconfortante para o almoço."},
+  {id:"carne-legumes",nome:"Carne moída com legumes",emj:"🥘",tipo:["almoco","jantar"],intens:["intenso","moderado","leve"],tempo:25,kcal:420,ess:["carnemoida"],opt:["cebola","tomate","cenoura","abobrinha","alho","molhotomate","sal"],passos:["Refogue cebola e alho.","Adicione a carne moída e doure.","Junte os legumes picados.","Tempere e cozinhe até apurar."],desc:"Rende muito e aproveita legumes da geladeira."},
+  {id:"file-pure",nome:"Frango grelhado com purê",emj:"🍗",tipo:["almoco","jantar"],intens:["moderado","leve"],tempo:30,kcal:480,ess:["frango","batata"],opt:["leite","manteiga","sal","alho"],passos:["Tempere e grelhe o frango.","Cozinhe a batata e amasse.","Misture leite e manteiga ao purê.","Sirva juntos."],desc:"Macio e cremoso, agrada todo mundo."},
+  {id:"alho-oleo",nome:"Macarrão ao alho e óleo",emj:"🍝",tipo:["almoco","jantar"],intens:["moderado","leve"],tempo:18,kcal:450,ess:["macarrao","alho"],opt:["azeite","oleo","oregano","parmesao","sal","salsinha"],passos:["Cozinhe o macarrão al dente.","Doure o alho fatiado no azeite.","Misture o macarrão ao alho.","Finalize com queijo ralado."],desc:"Pronto em minutos com pouquíssimos ingredientes."},
+  {id:"bolonhesa",nome:"Macarrão à bolonhesa",emj:"🍝",tipo:["almoco","jantar"],intens:["moderado","leve"],tempo:30,kcal:560,ess:["macarrao","carnemoida"],opt:["molhotomate","cebola","alho","oregano","parmesao"],passos:["Refogue a carne com cebola e alho.","Adicione o molho de tomate.","Cozinhe o macarrão à parte.","Junte tudo e sirva."],desc:"Um almoço de domingo a qualquer dia."},
+  {id:"peixe-assado",nome:"Peixe assado com legumes",emj:"🐟",tipo:["almoco","jantar"],intens:["intenso","moderado","leve"],tempo:35,kcal:380,ess:["peixe"],opt:["batata","cenoura","limao","alho","azeite","sal","cebola"],passos:["Tempere o peixe com limão, alho e sal.","Corte os legumes em rodelas.","Disponha tudo numa assadeira.","Asse a 200°C por 30 minutos."],desc:"Leve, assado e cheio de sabor."},
+  {id:"salada-completa",nome:"Salada completa com frango",emj:"🥗",tipo:["almoco","jantar"],intens:["intenso","moderado"],tempo:18,kcal:320,ess:["alface","frango"],opt:["tomate","pepino","cenoura","ovo","milhocons","azeite","limao"],passos:["Grelhe e fatie o frango.","Monte as folhas e legumes na tigela.","Adicione o frango por cima.","Tempere com azeite e limão."],desc:"Baixa caloria, ideal para desinchar."},
+  {id:"frango-xadrez",nome:"Frango xadrez",emj:"🥢",tipo:["almoco","jantar"],intens:["moderado","leve"],tempo:25,kcal:430,ess:["frango","pimentao"],opt:["cebola","arroz","alho","amendoim","sal"],passos:["Corte frango e pimentão em cubos.","Salteie em fogo alto com alho.","Tempere e finalize com amendoim.","Sirva com arroz."],desc:"Colorido, rápido e cheio de legumes."},
+  {id:"feijoada-simples",nome:"Feijoada simples",emj:"🥘",tipo:["almoco"],intens:["leve"],tempo:45,kcal:680,ess:["feijaopreto"],opt:["linguica","bacon","calabresa","arroz","couve","alho","cebola"],passos:["Refogue alho, cebola e os embutidos.","Junte o feijão preto cozido.","Apure por 20 minutos.","Sirva com arroz e couve."],desc:"O sabor de domingo em casa."},
+  {id:"escondidinho",nome:"Escondidinho de carne",emj:"🥧",tipo:["almoco","jantar"],intens:["moderado","leve"],tempo:40,kcal:560,ess:["carnemoida","mandioca"],opt:["mussarela","requeijao","cebola","alho","leite","manteiga"],passos:["Cozinhe e amasse a mandioca em purê.","Refogue a carne moída temperada.","Monte camadas de purê e carne.","Gratine com queijo no forno."],desc:"Aconchegante e aproveita sobras de carne."},
+  {id:"arroz-legumes-ovo",nome:"Arroz colorido com ovo",emj:"🍚",tipo:["almoco","jantar"],intens:["moderado","leve"],tempo:20,kcal:400,ess:["arroz","ovo"],opt:["cenoura","ervilhacons","milhocons","cebola","alho","seleta"],passos:["Refogue cebola e legumes.","Misture o arroz já cozido.","Adicione o ovo mexido.","Misture tudo e sirva."],desc:"Perfeito para reaproveitar arroz de ontem."},
+  {id:"bife-acebolado",nome:"Bife acebolado",emj:"🥩",tipo:["almoco","jantar"],intens:["intenso","moderado","leve"],tempo:18,kcal:420,ess:["carne","cebola"],opt:["arroz","alho","sal","alface","tomate"],passos:["Tempere os bifes com sal e alho.","Grelhe rapidamente em fogo alto.","Doure a cebola na mesma frigideira.","Cubra os bifes e sirva."],desc:"Suculento com cebola caramelizada."},
+
+  // LANCHE
+  {id:"sanduiche-natural",nome:"Sanduíche natural",emj:"🥪",tipo:["lanche"],intens:["intenso","moderado","leve"],tempo:10,kcal:280,ess:["paointegral"],opt:["frango","requeijao","alface","tomate","cenoura","peitoperu"],passos:["Misture o frango desfiado com requeijão.","Monte com folhas e tomate.","Feche o sanduíche e sirva."],desc:"Prático para levar e segurar a fome."},
+  {id:"frutas-iogurte",nome:"Frutas com iogurte",emj:"🍓",tipo:["lanche","ceia"],intens:["intenso","moderado","leve"],tempo:5,kcal:150,ess:["iogurte"],opt:["morango","banana","maca","granola","mel","chia"],passos:["Pique as frutas.","Misture com iogurte gelado.","Finalize com granola."],desc:"Doce natural sem culpa."},
+  {id:"cafe-bolacha",nome:"Café com torrada",emj:"☕",tipo:["lanche","cafe"],intens:["leve","moderado"],tempo:5,kcal:180,ess:["cafe"],opt:["torrada","paofrances","manteiga","requeijao","queijobranco"],passos:["Passe o café fresco.","Aqueça as torradas.","Passe manteiga ou requeijão."],desc:"O cafezinho da tarde que todo mundo ama."},
+  {id:"pao-queijo-cafe",nome:"Pão de queijo com café",emj:"🧀",tipo:["lanche","cafe"],intens:["leve","moderado"],tempo:20,kcal:260,ess:["paoqueijo"],opt:["cafe","manteiga"],passos:["Asse o pão de queijo até dourar.","Passe o café.","Sirva quentinho."],desc:"Mineiro raiz para a tarde."},
+  {id:"shake-proteico",nome:"Shake proteico",emj:"🥤",tipo:["lanche"],intens:["intenso","moderado","leve"],tempo:5,kcal:200,ess:["leite"],opt:["banana","aveia","pastaamendoim","mel","leitevegetal","cacau"],passos:["Bata o leite com banana e aveia.","Adicione pasta de amendoim.","Sirva gelado pós-treino."],desc:"Recuperação e saciedade depois do treino."},
+  {id:"mix-castanha",nome:"Mix de castanhas com fruta",emj:"🥜",tipo:["lanche","ceia"],intens:["intenso","moderado","leve"],tempo:2,kcal:190,ess:["castanha"],opt:["maca","banana","amendoim","uva"],passos:["Separe um punhado de castanhas.","Acompanhe com uma fruta.","Coma devagar."],desc:"Gordura boa e energia entre refeições."},
+  {id:"torrada-requeijao",nome:"Torrada com requeijão",emj:"🍞",tipo:["lanche"],intens:["leve","moderado"],tempo:5,kcal:170,ess:["torrada","requeijao"],opt:["oregano","tomate","peitoperu"],passos:["Aqueça a torrada.","Espalhe o requeijão.","Finalize com orégano."],desc:"Cinco minutos para matar a fominha."},
+  {id:"iogurte-granola",nome:"Iogurte com granola",emj:"🥣",tipo:["lanche","ceia"],intens:["intenso","moderado","leve"],tempo:3,kcal:200,ess:["iogurte","granola"],opt:["mel","banana","morango","chia"],passos:["Coloque o iogurte na tigela.","Cubra com granola.","Adicione mel a gosto."],desc:"Crocante e cremoso ao mesmo tempo."},
+  {id:"pipoca-caseira",nome:"Pipoca caseira",emj:"🍿",tipo:["lanche","ceia"],intens:["moderado","leve"],tempo:8,kcal:160,ess:["pipoca"],opt:["oleo","sal","azeite"],passos:["Aqueça o óleo na panela.","Adicione o milho e tampe.","Chacoalhe até estourar.","Tempere com sal."],desc:"Snack barato e com fibras."},
+
+  // JANTAR
+  {id:"sopa-legumes",nome:"Sopa de legumes",emj:"🥣",tipo:["jantar","ceia"],intens:["intenso","moderado","leve"],tempo:30,kcal:220,ess:["batata","cenoura"],opt:["abobrinha","chuchu","cebola","alho","caldo","frango","macarrao","sal"],passos:["Pique todos os legumes.","Refogue cebola e alho.","Cubra com água e cozinhe.","Bata parte ou sirva em pedaços."],desc:"Quentinha e leve para a noite."},
+  {id:"omelete-leve",nome:"Omelete leve com salada",emj:"🍳",tipo:["jantar"],intens:["intenso","moderado"],tempo:12,kcal:250,ess:["ovo"],opt:["alface","tomate","queijobranco","cebola","oregano","azeite"],passos:["Bata e tempere os ovos.","Faça a omelete em fogo baixo.","Sirva com salada fresca ao lado."],desc:"Jantar low carb pronto rápido."},
+  {id:"wrap-frango",nome:"Wrap de frango",emj:"🌯",tipo:["jantar","lanche"],intens:["moderado","leve"],tempo:15,kcal:340,ess:["wrap","frango"],opt:["alface","tomate","requeijao","cenoura","milhocons"],passos:["Desfie o frango temperado.","Aqueça o wrap.","Recheie com frango e salada.","Enrole e sirva."],desc:"Jantar leve para comer com as mãos."},
+  {id:"sopa-feijao",nome:"Sopa / caldo de feijão",emj:"🍲",tipo:["jantar"],intens:["moderado","leve"],tempo:25,kcal:300,ess:["feijao"],opt:["cenoura","macarrao","calabresa","cebola","alho","couve"],passos:["Bata parte do feijão cozido.","Volte à panela com temperos.","Adicione legumes e cozinhe.","Sirva bem quente."],desc:"Aproveita o feijão que sobrou do almoço."},
+  {id:"frango-vapor",nome:"Frango com legumes no vapor",emj:"🥦",tipo:["jantar"],intens:["intenso","moderado"],tempo:25,kcal:300,ess:["frango","brocolis"],opt:["cenoura","abobrinha","vagem","azeite","limao","sal"],passos:["Tempere o frango.","Cozinhe os legumes no vapor.","Grelhe o frango.","Sirva com fio de azeite."],desc:"O jantar mais leve do cardápio intenso."},
+  {id:"macarrao-atum",nome:"Macarrão com atum",emj:"🍝",tipo:["jantar","almoco"],intens:["moderado","leve"],tempo:18,kcal:420,ess:["macarrao","atum"],opt:["molhotomate","cebola","alho","milhocons","oregano","azeite"],passos:["Cozinhe o macarrão.","Refogue o atum com cebola.","Junte molho de tomate.","Misture tudo e sirva."],desc:"Despensa pura: rápido e barato."},
+  {id:"salada-atum",nome:"Salada de atum",emj:"🥗",tipo:["jantar","almoco"],intens:["intenso","moderado"],tempo:10,kcal:260,ess:["atum","alface"],opt:["tomate","ovo","milhocons","cebola","azeite","limao","pepino"],passos:["Escorra o atum.","Monte as folhas e legumes.","Adicione o atum e o ovo.","Tempere e sirva."],desc:"Proteína e leveza sem fogão."},
+  {id:"caldo-verde",nome:"Caldo verde",emj:"🍲",tipo:["jantar"],intens:["moderado","leve"],tempo:30,kcal:330,ess:["batata","couve"],opt:["linguica","calabresa","cebola","alho","caldo"],passos:["Cozinhe e bata a batata.","Refogue a linguiça fatiada.","Junte o caldo e a couve picada.","Cozinhe 5 minutos e sirva."],desc:"Reconfortante para noites frias."},
+  {id:"arroz-ovo-sobras",nome:"Arroz de forno com sobras",emj:"🍚",tipo:["jantar"],intens:["leve","moderado"],tempo:25,kcal:430,ess:["arroz"],opt:["ovo","frango","queijoprato","milhocons","ervilhacons","presunto","requeijao"],passos:["Misture o arroz com as sobras.","Acrescente ovo e queijo.","Leve ao forno para gratinar.","Sirva dourado."],desc:"Transforma sobras num jantar novo."},
+
+  // CEIA
+  {id:"cha-torrada",nome:"Chá com torrada",emj:"🍵",tipo:["ceia"],intens:["intenso","moderado","leve"],tempo:6,kcal:120,ess:["chamomila"],opt:["torrada","queijobranco","mel","chaverde"],passos:["Prepare o chá.","Aqueça a torrada.","Sirva morno antes de dormir."],desc:"Relaxante para fechar o dia."},
+  {id:"iogurte-natural-ceia",nome:"Iogurte natural",emj:"🥛",tipo:["ceia"],intens:["intenso","moderado","leve"],tempo:2,kcal:90,ess:["iogurte"],opt:["chia","canela","mel","morango"],passos:["Coloque o iogurte na tigela.","Polvilhe canela ou chia.","Sirva gelado."],desc:"Leve e ajuda na saciedade noturna."},
+  {id:"leite-canela",nome:"Leite morno com canela",emj:"🥛",tipo:["ceia"],intens:["moderado","leve"],tempo:5,kcal:140,ess:["leite"],opt:["canela","mel","leitevegetal"],passos:["Aqueça o leite sem ferver.","Adicione canela.","Adoce levemente se quiser."],desc:"Conforto clássico antes de dormir."},
+  {id:"fruta-ceia",nome:"Fruta da estação",emj:"🍎",tipo:["ceia","lanche"],intens:["intenso","moderado","leve"],tempo:2,kcal:90,ess:[],optAny:["maca","banana","pera","mamao","morango"],opt:["maca","banana","pera","mamao","morango"],passos:["Escolha uma fruta disponível.","Lave bem.","Coma com calma."],desc:"A ceia mais simples e natural possível."},
+  {id:"cha-calmante",nome:"Chá calmante",emj:"🍵",tipo:["ceia"],intens:["intenso","moderado","leve"],tempo:5,kcal:10,ess:["chamomila"],opt:["mel","hibisco","chaverde"],passos:["Ferva a água.","Deixe o chá em infusão por 5 min.","Coe e sirva."],desc:"Zero caloria, ótimo para relaxar."},
+  {id:"queijo-cha",nome:"Queijo branco com chá",emj:"🧀",tipo:["ceia"],intens:["intenso","moderado"],tempo:4,kcal:130,ess:["queijobranco"],opt:["chaverde","chamomila","oregano"],passos:["Corte o queijo branco em cubos.","Prepare um chá.","Sirva juntos."],desc:"Proteína leve para a noite."},
+];
+
+/* ---------- SUBSTITUTIONS ---------- */
+const SUBS = [
+  {from:"arroz",fromN:"Arroz branco",to:"arrozintegral",toN:"Arroz integral / Quinoa",why:"Mais fibras e digestão mais lenta, aumentando a saciedade.",intens:["intenso","moderado","leve"]},
+  {from:"paofrances",fromN:"Pão francês",to:"tapioca",toN:"Tapioca ou pão integral",why:"Reduz a densidade calórica e o índice glicêmico no café da manhã.",intens:["intenso","moderado"]},
+  {from:"refrigerante",fromN:"Refrigerante",to:"agua",toN:"Água com gás + limão",why:"Corta açúcar líquido — um dos maiores vilões do desinchaço.",intens:["intenso","moderado","leve"]},
+  {from:"acucar",fromN:"Açúcar refinado",to:"mel",toN:"Mel, canela ou banana amassada",why:"Adoça de forma mais natural e com menos picos de glicemia.",intens:["intenso","moderado","leve"]},
+  {from:"manteiga",fromN:"Manteiga / Margarina",to:"azeite",toN:"Azeite ou pasta de amendoim",why:"Troca gordura saturada por gordura boa.",intens:["intenso","moderado"]},
+  {from:"macarrao",fromN:"Macarrão comum",to:"abobrinha",toN:"Abobrinha em tiras / massa integral",why:"Menos carboidrato simples e mais volume no prato.",intens:["intenso"]},
+  {from:"bolacharecheada",fromN:"Bolacha recheada",to:"aveia",toN:"Aveia, fruta ou castanhas",why:"Reduz açúcar e gordura trans, aumentando fibras.",intens:["intenso","moderado","leve"]},
+  {from:"cremeleite",fromN:"Creme de leite",to:"iogurte",toN:"Iogurte natural",why:"Mantém a cremosidade com menos gordura.",intens:["intenso","moderado"]},
+  {from:"batatacongelada",fromN:"Batata frita",to:"batatadoce",toN:"Batata assada / Batata-doce",why:"Assar elimina o óleo e a doce libera energia mais devagar.",intens:["intenso","moderado","leve"]},
+  {from:"leite",fromN:"Leite integral",to:"leitevegetal",toN:"Leite desnatado ou vegetal",why:"Reduz a gordura mantendo o líquido base.",intens:["intenso","moderado"]},
+  {from:"salgadinho",fromN:"Salgadinho de pacote",to:"pipoca",toN:"Pipoca ou castanhas",why:"Mais fibras e menos sódio e gordura processada.",intens:["intenso","moderado","leve"]},
+  {from:"suco",fromN:"Suco de caixinha",to:"aguacoco",toN:"Suco natural ou água de coco",why:"Menos açúcar adicionado e mais nutrientes.",intens:["intenso","moderado","leve"]},
+  {from:"presunto",fromN:"Presunto / Mortadela",to:"peitoperu",toN:"Peito de peru ou frango desfiado",why:"Menos sódio e gordura, mais proteína magra.",intens:["intenso","moderado"]},
+  {from:"sorvete",fromN:"Sorvete",to:"polpafruta",toN:"Sorbet de fruta congelada",why:"Bate a polpa gelada e mata a vontade de doce.",intens:["intenso","moderado"]},
+];
+
+/* ---------- GOALS / RESTRICTIONS / INTENSITY META ---------- */
+const OBJETIVOS = [
+  ["emagrecer","Emagrecer","🔥","Reduzir gordura"],
+  ["desinchar","Desinchar","💧","Menos retenção"],
+  ["massa","Ganhar massa","💪","Mais proteína"],
+  ["manter","Manter peso","⚖️","Equilíbrio"],
+  ["energia","Mais energia","⚡","Disposição no dia"],
+  ["economizar","Economizar","💰","Render a despensa"],
+  ["comermelhor","Comer melhor","🥗","Mais qualidade"],
+  ["rotina","Praticidade","⏱️","Rápido no dia a dia"],
+];
+const RESTRICOES = [
+  ["semlactose","Sem lactose","🥛"],
+  ["semgluten","Sem glúten","🌾"],
+  ["vegetariano","Vegetariano","🥬"],
+  ["vegano","Vegano","🌱"],
+  ["semacucar","Sem açúcar","🚫"],
+  ["lowcarb","Low carb","🥩"],
+  ["semoleaginosas","Sem oleaginosas","🥜"],
+];
+const RESTRICAO_TAGS = {
+  semlactose:["lactose"],
+  semgluten:["gluten"],
+  vegetariano:["carne","peixe","frango"],
+  vegano:["carne","peixe","frango","ovo","lactose","mel"],
+  semacucar:["acucar"],
+  semoleaginosas:["oleaginosa"],
+};
+const INTENS = {
+  intenso:{nome:"Intenso",emj:"🔥",cor:"var(--rose)",corL:"var(--rose-l)",
+    desc:"Foco em desinchaço, redução de retenção hídrica e emagrecimento acelerado de curto prazo. Alimentação mais restrita, baixa densidade calórica e maior controle de carboidratos.",
+    tag:"Curto prazo · Restrito",
+    feats:["Prioriza proteínas magras e vegetais","Carboidrato reduzido, principalmente à noite","Menos sódio, açúcar e processados","6 refeições leves e bastante água"],
+    metas:{agua:12,refeicoes:5,vegetais:5,proteina:4},
+    refeicoes:[["07:00","Café da manhã","cafe"],["10:00","Lanche da manhã","lanche"],["12:30","Almoço","almoco"],["15:30","Lanche da tarde","lanche"],["19:00","Jantar","jantar"],["21:30","Ceia","ceia"]]},
+  moderado:{nome:"Moderado",emj:"🌿",cor:"var(--accent)",corL:"var(--accent-l)",
+    desc:"Foco em emagrecimento gradual e sustentável, com maior flexibilidade alimentar e equilíbrio nutricional. O caminho do meio para resultados que duram.",
+    tag:"Sustentável · Equilibrado",
+    feats:["Equilíbrio entre carbo, proteína e gordura","Flexibilidade sem grandes restrições","Foco em comida de verdade","5 refeições bem distribuídas"],
+    metas:{agua:10,refeicoes:4,vegetais:3,proteina:3},
+    refeicoes:[["07:30","Café da manhã","cafe"],["10:30","Lanche","lanche"],["12:30","Almoço","almoco"],["16:00","Lanche","lanche"],["19:30","Jantar","jantar"]]},
+  leve:{nome:"Leve",emj:"☀️",cor:"var(--amber)",corL:"var(--amber-l)",
+    desc:"Foco em manutenção, alimentação cotidiana equilibrada, praticidade e aderência no longo prazo. Para quem quer comer bem sem complicar a rotina.",
+    tag:"Manutenção · Prático",
+    feats:["Cardápio cotidiano e realista","Sem proibições — só bom senso","Aproveita o que já tem em casa","3 a 4 refeições por dia"],
+    metas:{agua:8,refeicoes:3,vegetais:2,proteina:2},
+    refeicoes:[["08:00","Café da manhã","cafe"],["12:30","Almoço","almoco"],["16:00","Lanche","lanche"],["20:00","Jantar","jantar"]]},
+};
+const METAS_INFO = {
+  agua:{lab:"Água",sub:"copos",emj:"💧",cor:"var(--accent-2)"},
+  refeicoes:{lab:"Refeições",sub:"no dia",emj:"🍽️",cor:"var(--accent)"},
+  vegetais:{lab:"Vegetais",sub:"porções",emj:"🥦",cor:"var(--violet)"},
+  proteina:{lab:"Proteína",sub:"porções",emj:"🍗",cor:"var(--amber)"},
+};
+
+/* ---------- TABS ---------- */
+const TABS = [
+  ["estoque","Meu Estoque","🛒","O que você tem em casa hoje?"],
+  ["objetivos","Objetivos","🎯","Para onde você quer ir?"],
+  ["intensidade","Intensidade","🔥","Escolha o ritmo do seu plano"],
+  ["cardapios","Cardápios","📋","Seu plano do dia, montado na hora"],
+  ["receitas","Receitas","👨‍🍳","Tudo que dá para fazer agora"],
+  ["rapidas","Receitas Rápidas","⚡","Pronto em até 15 minutos"],
+  ["semanal","Organização Semanal","🗓️","Sua semana planejada"],
+  ["substituicoes","Substituições","🔄","Trocas inteligentes"],
+  ["estrategias","Estratégias","🧭","Para dias corridos e fora de casa"],
+  ["compras","Lista de Compras","🧾","O que falta para completar"],
+  ["favoritos","Favoritos","❤️","Suas receitas salvas"],
+  ["historico","Histórico","🕑","Planos que você já gerou"],
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const LS_KEY = "nutricasa_v1";
+const todayStr = ()=> new Date().toISOString().slice(0,10);
+let state = {
+  estoque:[], objetivos:[], restricoes:[], intensidade:"moderado",
+  favoritos:[], compras:[], historico:[], theme:"light",
+  cardapio:null, metasDia:{date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0},
+};
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY));
+    if(s) state = {...state,...s};
+  }catch(e){}
+  if(!state.metasDia || state.metasDia.date!==todayStr())
+    state.metasDia = {date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0};
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+const has = id => state.estoque.includes(id);
+const isFav = id => state.favoritos.includes(id);
+
+/* ============================================================
+   RECIPE ENGINE
+   ============================================================ */
+function recipeRestrictionTags(r){
+  // junta props de todos os ingredientes (ess+opt) para checar restrições
+  const ids = [...(r.ess||[]),...(r.opt||[])];
+  const tags = new Set();
+  ids.forEach(id=>{ const f=FOOD_MAP[id]; if(f) f.props.forEach(p=>tags.add(p)); });
+  return tags;
+}
+function violatesRestriction(r){
+  // Só considera ingredientes ESSENCIAIS para restrições (opcionais podem ser omitidos),
+  // exceto vegetariano/vegano que olham o conceito do prato via essenciais.
+  for(const rid of state.restricoes){
+    const banned = RESTRICAO_TAGS[rid];
+    if(!banned) continue;
+    for(const id of (r.ess||[])){
+      const f=FOOD_MAP[id];
+      if(f && f.props.some(p=>banned.includes(p))) return RESTRICOES.find(x=>x[0]===rid)[1];
+    }
+  }
+  return null;
+}
+function recipeMatch(r){
+  const ess = r.ess||[];
+  let missing = ess.filter(id=>!has(id));
+  // optAny: precisa ter ao menos um
+  if(r.optAny && r.optAny.length){
+    const okAny = r.optAny.some(id=>has(id));
+    if(!okAny) missing = [...missing, r.optAny[0]];
+  }
+  const optHave = (r.opt||[]).filter(id=>has(id)).length;
+  const optTotal = (r.opt||[]).length || 1;
+  const essScore = ess.length ? (ess.length-missing.filter(m=>ess.includes(m)).length)/ess.length : 1;
+  const score = essScore*0.75 + (optHave/optTotal)*0.25;
+  return {missing, optHave, score, complete:missing.length===0, essScore};
+}
+// retorna receitas ordenadas; mode: 'makeable' (sem essenciais faltando) ou 'all'
+function getRecipes({tipo=null,intens=null,mode="all",onlyFav=false,maxMissing=99,rapida=false}={}){
+  let list = RECIPES.slice();
+  if(tipo) list = list.filter(r=>r.tipo.includes(tipo));
+  if(intens) list = list.filter(r=>r.intens.includes(intens));
+  if(onlyFav) list = list.filter(r=>isFav(r.id));
+  if(rapida) list = list.filter(r=>r.tempo<=15);
+  const out = [];
+  for(const r of list){
+    if(violatesRestriction(r)) continue;
+    const m = recipeMatch(r);
+    if(mode==="makeable" && !m.complete) continue;
+    if(m.missing.length>maxMissing) continue;
+    out.push({...r, ...m});
+  }
+  out.sort((a,b)=> (b.complete-a.complete) || (b.score-a.score) || (a.tempo-b.tempo));
+  return out;
+}
+function gerarCardapio(){
+  const cfg = INTENS[state.intensidade];
+  const plano = [];
+  const used = new Set();
+  for(const [hora,label,tipo] of cfg.refeicoes){
+    // prioriza o que dá pra fazer; se nada, pega o melhor parcial
+    let cands = getRecipes({tipo, intens:state.intensidade}).filter(r=>!used.has(r.id));
+    if(!cands.length) cands = getRecipes({tipo, intens:state.intensidade});
+    // dá leve aleatoriedade entre os 3 melhores completos
+    const completos = cands.filter(r=>r.complete);
+    const pool = completos.length ? completos.slice(0,3) : cands.slice(0,3);
+    const pick = pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
+    if(pick) used.add(pick.id);
+    plano.push({hora,label,tipo,recipe:pick});
+  }
+  return plano;
+}
+
+/* ============================================================
+   ROUTER / RENDER
+   ============================================================ */
+let currentTab = "estoque";
+let estoqueSearch = "";
+let estoqueCat = "todas";
+
+function navTo(tab){
+  currentTab = tab;
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.toggle("active", n.dataset.tab===tab));
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("scrim").classList.remove("show");
+  const t = TABS.find(x=>x[0]===tab);
+  document.getElementById("topTitle").textContent = t[1];
+  document.getElementById("topSub").textContent = t[3];
+  render();
+  document.getElementById("content").scrollIntoView({block:"start"});
+  window.scrollTo(0,0);
+}
+
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = TABS.map(t=>{
+    let badge = "";
+    if(t[0]==="estoque" && state.estoque.length) badge=`<span class="nav-badge">${state.estoque.length}</span>`;
+    if(t[0]==="favoritos" && state.favoritos.length) badge=`<span class="nav-badge">${state.favoritos.length}</span>`;
+    if(t[0]==="compras" && state.compras.length) badge=`<span class="nav-badge">${state.compras.length}</span>`;
+    return `<button class="nav-item ${t[0]===currentTab?'active':''}" data-action="nav" data-tab="${t[0]}">
+      <span class="ic">${t[2]}</span><span>${t[1]}</span>${badge}</button>`;
+  }).join("");
+}
+
+function updateIntensPill(){
+  const c = INTENS[state.intensidade];
+  document.getElementById("intensDot").style.background = c.cor;
+  document.getElementById("intensName").textContent = c.nome;
+}
+
+function render(){
+  renderNav();
+  updateIntensPill();
+  const el = document.getElementById("content");
+  const r = {
+    estoque:renderEstoque, objetivos:renderObjetivos, intensidade:renderIntensidade,
+    cardapios:renderCardapios, receitas:renderReceitas, rapidas:renderRapidas,
+    semanal:renderSemanal, substituicoes:renderSubstituicoes, estrategias:renderEstrategias,
+    compras:renderCompras, favoritos:renderFavoritos, historico:renderHistorico,
+  }[currentTab];
+  el.innerHTML = `<div class="view active">${r()}</div>`;
+}
+
+function head(emj,titulo,desc){
+  return `<div class="view-head"><h2><span class="emj">${emj}</span>${titulo}</h2><p>${desc}</p></div>`;
+}
+
+/* ---------- ESTOQUE ---------- */
+function renderEstoque(){
+  const total = state.estoque.length;
+  const q = estoqueSearch.trim().toLowerCase();
+  let foods = FOODS.map(f=>FOOD_MAP[f[0]]);
+  if(q) foods = foods.filter(f=>f.nome.toLowerCase().includes(q));
+  if(estoqueCat!=="todas") foods = foods.filter(f=>f.cat===estoqueCat);
+
+  const catPills = `<div class="cat-filter">
+    <button class="cat-pill ${estoqueCat==='todas'?'on':''}" data-action="filter-cat" data-cat="todas">🍴 Todas</button>
+    ${CATS.map(c=>`<button class="cat-pill ${estoqueCat===c?'on':''}" data-action="filter-cat" data-cat="${c}">${CAT_EMOJI[c]} ${c}</button>`).join("")}
+  </div>`;
+
+  // agrupa por categoria
+  const byCat = {};
+  foods.forEach(f=>{ (byCat[f.cat]=byCat[f.cat]||[]).push(f); });
+  const order = estoqueCat!=="todas" ? [estoqueCat] : CATS;
+  let blocks = order.filter(c=>byCat[c]).map(c=>{
+    const items = byCat[c];
+    const sel = items.filter(f=>has(f.id)).length;
+    return `<div class="cat-block">
+      <div class="cat-head"><span class="emj">${CAT_EMOJI[c]}</span><h3>${c}</h3>
+        <span class="count">${sel}/${items.length} no estoque</span></div>
+      <div class="food-grid">
+        ${items.map(f=>`<button class="food ${has(f.id)?'on':''}" data-action="toggle-food" data-id="${f.id}">
+          <span class="check">✓</span><span class="emj">${f.emoji}</span><span class="nm">${f.nome}</span></button>`).join("")}
+      </div></div>`;
+  }).join("");
+  if(!blocks) blocks = `<div class="empty"><span class="emj">🔍</span><h3>Nada encontrado</h3><p>Tente outro termo ou categoria.</p></div>`;
+
+  const makeable = getRecipes({mode:"makeable"}).length;
+  return `
+  ${head("🛒","Meu Estoque","Marque tudo que você tem na despensa e na geladeira — até o que sobrou da semana. As sugestões se adaptam na hora.")}
+  <div class="stat-row">
+    <div class="stat"><div class="lab">📦 No estoque</div><div class="num">${total}<small> itens</small></div><span class="ic">📦</span></div>
+    <div class="stat"><div class="lab">👨‍🍳 Dá pra fazer agora</div><div class="num">${makeable}<small> receitas</small></div><span class="ic">👨‍🍳</span></div>
+    <div class="stat"><div class="lab">🗂️ Categorias</div><div class="num">${new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size}</div><span class="ic">🗂️</span></div>
+  </div>
+  <div class="toolbar">
+    <div class="search"><span class="ic">🔍</span><input id="estoqueSearch" placeholder="Buscar alimento... (ex.: frango, pão, café)" value="${estoqueSearch.replace(/"/g,'&quot;')}"></div>
+    <button class="btn btn-sm btn-ghost" data-action="add-essentials">✨ Itens comuns</button>
+    ${total?`<button class="btn btn-sm btn-ghost" data-action="clear-estoque">🗑️ Limpar</button>`:""}
+    <button class="btn btn-sm btn-primary" data-action="nav" data-tab="cardapios">Gerar cardápio →</button>
+  </div>
+  ${catPills}
+  ${blocks}`;
+}
+
+/* ---------- OBJETIVOS ---------- */
+function renderObjetivos(){
+  return `
+  ${head("🎯","Objetivos","Selecione um ou mais objetivos. Eles ajustam o tom das sugestões, das metas diárias e das estratégias.")}
+  <div class="banner"><span class="emj">🧭</span><div><h4>Pode escolher quantos quiser</h4><p>Combine objetivos como "desinchar" + "economizar" — o plano se adapta a você.</p></div></div>
+  <div class="section-title">Meus objetivos <span class="pill">${state.objetivos.length} selecionado(s)</span></div>
+  <div class="goal-grid">
+    ${OBJETIVOS.map(o=>`<button class="goal ${state.objetivos.includes(o[0])?'on':''}" data-action="toggle-objetivo" data-id="${o[0]}">
+      <span class="emj">${o[2]}</span><span class="nm">${o[1]}</span><span class="ds">${o[3]}</span></button>`).join("")}
+  </div>
+  <div class="section-title">Restrições alimentares <span class="pill">opcional</span></div>
+  <p class="muted" style="font-size:13.5px;margin-bottom:13px">Receitas que conflitam com suas restrições são automaticamente ocultadas dos cardápios.</p>
+  <div class="chip-row">
+    ${RESTRICOES.map(rt=>`<button class="chip ${state.restricoes.includes(rt[0])?'on':''}" data-action="toggle-restricao" data-id="${rt[0]}">
+      ${rt[2]} ${rt[1]} ${state.restricoes.includes(rt[0])?'<span class="x">✕</span>':''}</button>`).join("")}
+  </div>
+  <div class="divider"></div>
+  <div class="fab-row">
+    <button class="btn btn-primary" data-action="nav" data-tab="intensidade">Próximo: Intensidade →</button>
+    <button class="btn btn-ghost" data-action="nav" data-tab="cardapios">Ver cardápio</button>
+  </div>`;
+}
+
+/* ---------- INTENSIDADE ---------- */
+function renderIntensidade(){
+  const cards = Object.entries(INTENS).map(([key,c])=>`
+    <div class="intens-card ${state.intensidade===key?'sel':''}" data-action="set-intensidade" data-id="${key}">
+      <div class="ribbon" style="background:${c.cor}"></div>
+      <div class="selbadge">✓ Selecionado</div>
+      <span class="emj">${c.emj}</span>
+      <h3>${c.nome}</h3>
+      <span class="tag" style="background:${c.corL};color:${c.cor}">${c.tag}</span>
+      <p>${c.desc}</p>
+      <div class="feats">${c.feats.map(f=>`<div>${f}</div>`).join("")}</div>
+    </div>`).join("");
+  const c = INTENS[state.intensidade];
+  return `
+  ${head("🔥","Intensidade","Escolha o ritmo do seu plano alimentar. Você pode trocar quando quiser — o cardápio e as metas se ajustam na hora.")}
+  <div class="intens-grid">${cards}</div>
+  <div class="divider"></div>
+  <div class="card">
+    <div class="section-title" style="margin-top:0">Metas diárias no perfil <span class="pill" style="background:${c.corL};color:${c.cor}">${c.nome}</span></div>
+    <div class="meta-grid">
+      ${Object.entries(c.metas).map(([k,v])=>{
+        const info=METAS_INFO[k];
+        return `<div class="meta-card"><div style="font-size:24px">${info.emj}</div>
+          <div class="num" style="font-size:24px;font-weight:800">${v}</div>
+          <div class="lab">${info.lab}</div><div class="sub">${info.sub} / dia</div></div>`;
+      }).join("")}
+    </div>
+  </div>
+  <div class="fab-row" style="margin-top:18px">
+    <button class="btn btn-primary" data-action="nav" data-tab="cardapios">Gerar meu cardápio →</button>
+  </div>`;
+}
+
+/* ---------- CARDÁPIOS ---------- */
+function renderCardapios(){
+  const c = INTENS[state.intensidade];
+  if(!state.estoque.length){
+    return head("📋","Cardápios","Seu plano alimentar do dia, montado a partir do que você tem em casa.") +
+      emptyEstoque();
+  }
+  if(!state.cardapio || state.cardapio.intensidade!==state.intensidade){
+    state.cardapio = {intensidade:state.intensidade, plano:gerarCardapio(), date:todayStr()};
+    save();
+  }
+  const plano = state.cardapio.plano;
+
+  // metas / progresso
+  const metasHtml = Object.entries(c.metas).map(([k,goal])=>{
+    const cur = state.metasDia[k]||0;
+    const info = METAS_INFO[k];
+    const pct = Math.min(100, Math.round(cur/goal*100));
+    const R=34, circ=2*Math.PI*R, off=circ-(pct/100)*circ;
+    return `<div class="meta-card">
+      <div class="ring">
+        <svg width="84" height="84" viewBox="0 0 84 84">
+          <circle cx="42" cy="42" r="${R}" fill="none" stroke="var(--surface-3)" stroke-width="8"/>
+          <circle cx="42" cy="42" r="${R}" fill="none" stroke="${info.cor}" stroke-width="8" stroke-linecap="round"
+            stroke-dasharray="${circ}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .5s"/>
+        </svg>
+        <div class="val">${info.emj}</div>
+      </div>
+      <div class="lab">${info.lab}</div>
+      <div class="sub">${cur} / ${goal} ${info.sub}</div>
+      <div class="meta-ctrl">
+        <button data-action="meta-dec" data-meta="${k}">−</button>
+        <button data-action="meta-inc" data-meta="${k}">+</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  // cronograma
+  const tl = plano.map(p=>{
+    const r = p.recipe;
+    if(!r) return `<div class="tl-item"><div class="tl-dot">🍽️</div>
+      <div class="tl-card"><div class="tl-time">${p.hora}</div><div class="tl-meal">${p.label}</div>
+      <h4 style="color:var(--text-faint)">Sem sugestão ainda</h4>
+      <div class="tl-ings">Adicione mais alimentos ao estoque para preencher esta refeição.</div></div></div>`;
+    const have = (r.opt||[]).filter(id=>has(id)).concat((r.ess||[]).filter(id=>has(id)));
+    const ingNames = have.slice(0,5).map(id=>FOOD_MAP[id]?.nome).filter(Boolean).join(", ");
+    return `<div class="tl-item"><div class="tl-dot">${r.emj}</div>
+      <div class="tl-card" data-action="open-recipe" data-id="${r.id}" style="cursor:pointer">
+        <div class="tl-time">${p.hora}</div><div class="tl-meal">${p.label}</div>
+        <h4>${r.nome}</h4>
+        <div class="tl-ings">${ingNames || r.desc}</div>
+        <div class="tl-foot">
+          <span class="tl-meta">⏱️ ${r.tempo} min</span>
+          <span class="tl-meta">🔥 ~${r.kcal} kcal</span>
+          ${r.missing.length?`<span class="tl-meta" style="color:var(--amber)">🛒 faltam ${r.missing.length}</span>`:`<span class="tl-meta" style="color:var(--accent)">✓ tem tudo</span>`}
+          <button class="btn btn-sm rec-fav-inline ${isFav(r.id)?'on':''}" data-action="toggle-fav" data-id="${r.id}" style="margin-left:auto;padding:5px 11px">${isFav(r.id)?'❤️ Salvo':'🤍 Salvar'}</button>
+        </div>
+      </div></div>`;
+  }).join("");
+
+  return `
+  ${head("📋","Cardápios","Seu plano do dia montado com o que você tem, no ritmo "+c.nome+". Cada refeição prioriza seus ingredientes disponíveis.")}
+  <div class="card" style="margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:6px">
+      <div class="section-title" style="margin:0">Metas de hoje <span class="pill" style="background:${c.corL};color:${c.cor}">${c.nome}</span></div>
+      <button class="btn btn-sm btn-ghost" data-action="reset-metas">↺ Zerar dia</button>
+    </div>
+    <div class="meta-grid">${metasHtml}</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+    <div class="section-title" style="margin:0">🕐 Cronograma de hoje</div>
+    <div class="fab-row">
+      <button class="btn btn-sm" data-action="gerar-cardapio">🔀 Gerar outro</button>
+      <button class="btn btn-sm btn-primary" data-action="salvar-historico">💾 Salvar no histórico</button>
+    </div>
+  </div>
+  <div class="timeline">${tl}</div>`;
+}
+
+function emptyEstoque(){
+  return `<div class="empty"><span class="emj">🧺</span><h3>Sua despensa está vazia</h3>
+    <p>Marque os alimentos que você tem em casa para o NutriCasa montar cardápios e receitas com o que realmente existe na sua cozinha.</p>
+    <button class="btn btn-primary" data-action="nav" data-tab="estoque">Montar meu estoque</button></div>`;
+}
+
+/* ---------- RECEITAS ---------- */
+let recFilter = "todas"; // todas | completas | quase
+function renderReceitas(){
+  if(!state.estoque.length) return head("👨‍🍳","Receitas","Receitas que combinam com o seu estoque.")+emptyEstoque();
+  let list = getRecipes({intens:null, maxMissing:99});
+  // ranque por estoque, mostra completas e quase-completas
+  if(recFilter==="completas") list = list.filter(r=>r.complete);
+  if(recFilter==="quase") list = list.filter(r=>!r.complete && r.missing.length<=2);
+  const completas = getRecipes().filter(r=>r.complete).length;
+  const filters = `<div class="chip-row" style="margin-bottom:18px">
+    <button class="chip ${recFilter==='todas'?'on':''}" data-action="rec-filter" data-f="todas">Todas</button>
+    <button class="chip ${recFilter==='completas'?'on':''}" data-action="rec-filter" data-f="completas">✓ Tenho tudo (${completas})</button>
+    <button class="chip ${recFilter==='quase'?'on':''}" data-action="rec-filter" data-f="quase">Quase lá (faltam 1-2)</button>
+  </div>`;
+  const cards = list.length ? `<div class="grid g-auto">${list.map(recipeCard).join("")}</div>`
+    : `<div class="empty"><span class="emj">🤔</span><h3>Nada por aqui</h3><p>Tente outro filtro ou adicione mais alimentos ao estoque.</p></div>`;
+  return `
+  ${head("👨‍🍳","Receitas","Tudo que dá para cozinhar agora, ordenado pelo que você já tem. As que faltam poucos itens viram sugestão de compra.")}
+  ${filters}${cards}`;
+}
+
+function recipeCard(r){
+  const cfg = INTENS[state.intensidade];
+  const thumbBg = `linear-gradient(135deg,${cfg.corL},var(--surface-2))`;
+  let match;
+  if(r.complete) match=`<span class="match-tag" style="background:var(--accent)">✓ Tem tudo</span>`;
+  else if(r.missing.length<=2) match=`<span class="match-tag" style="background:var(--amber)">Faltam ${r.missing.length}</span>`;
+  else match=`<span class="match-tag" style="background:var(--text-faint)">Faltam ${r.missing.length}</span>`;
+  const missNote = r.missing.length ? `<div class="miss-note">🛒 Falta: ${r.missing.map(id=>FOOD_MAP[id]?.nome||id).join(", ")}</div>` : "";
+  const tipos = r.tipo.map(t=>({cafe:"Café",almoco:"Almoço",lanche:"Lanche",jantar:"Jantar",ceia:"Ceia"}[t])).slice(0,2);
+  return `<div class="rec-card">
+    <div class="rec-thumb" style="background:${thumbBg}">${r.emj}${match}
+      <button class="rec-fav ${isFav(r.id)?'on':''}" data-action="toggle-fav" data-id="${r.id}">${isFav(r.id)?'❤️':'🤍'}</button>
+    </div>
+    <div class="rec-body">
+      <h4>${r.nome}</h4>
+      <div class="rec-meta">
+        <span>⏱️ ${r.tempo} min</span><span>🔥 ~${r.kcal} kcal</span><span>🍽️ ${tipos.join(" · ")}</span>
+      </div>
+      <div class="rec-tags">${tipos.map(t=>`<span class="rtag">${t}</span>`).join("")}${r.missing.length?`<span class="rtag miss">${r.missing.length} p/ comprar</span>`:`<span class="rtag" style="background:var(--accent-l);color:var(--accent-d)">pronto p/ fazer</span>`}</div>
+      ${missNote}
+      <div class="rec-foot">
+        <button class="btn btn-sm btn-primary" data-action="open-recipe" data-id="${r.id}" style="flex:1">Ver receita</button>
+        ${r.missing.length?`<button class="btn btn-sm btn-ghost" data-action="add-missing" data-id="${r.id}" title="Adicionar itens faltantes à lista">🧾</button>`:""}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- RÁPIDAS ---------- */
+function renderRapidas(){
+  if(!state.estoque.length) return head("⚡","Receitas Rápidas","Pronto em até 15 minutos.")+emptyEstoque();
+  const list = getRecipes({rapida:true, maxMissing:2});
+  const cards = list.length ? `<div class="grid g-auto">${list.map(recipeCard).join("")}</div>`
+    : `<div class="empty"><span class="emj">⚡</span><h3>Nenhuma rápida com o estoque atual</h3><p>Adicione ovos, pão, tapioca, iogurte ou frutas para liberar receitas expressas.</p></div>`;
+  return `
+  ${head("⚡","Receitas Rápidas","Para dias corridos: tudo aqui fica pronto em 15 minutos ou menos, usando o que você já tem.")}
+  <div class="banner"><span class="emj">⏱️</span><div><h4>Modo correria</h4><p>Ideal para café da manhã apressado, jantar tarde ou aquele lanche entre reuniões.</p></div></div>
+  ${cards}`;
+}
+
+/* ---------- SEMANAL ---------- */
+function renderSemanal(){
+  if(!state.estoque.length) return head("🗓️","Organização Semanal","Sua semana planejada.")+emptyEstoque();
+  const dias = ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"];
+  const cfg = INTENS[state.intensidade];
+  // gera uma semana variada
+  const slots = cfg.refeicoes.map(r=>[r[1],r[2]]);
+  // monta grade: para cada slot, sortear receitas diferentes por dia
+  function pick(tipo, seed){
+    const cands = getRecipes({tipo, intens:state.intensidade});
+    const pool = cands.filter(r=>r.complete).length? cands.filter(r=>r.complete): cands;
+    if(!pool.length) return null;
+    return pool[seed % pool.length];
+  }
+  let rows = slots.map((s,si)=>{
+    const cells = dias.map((d,di)=>{
+      const r = pick(s[1], si*3+di*2+1);
+      return r ? `<div class="wk-cell"><div class="meal">${r.emj} ${r.nome}</div></div>`
+               : `<div class="wk-cell empty">—</div>`;
+    }).join("");
+    return `<div class="wk-cell wk-label">${s[0]}</div>${cells}`;
+  }).join("");
+  const headRow = `<div class="wk-cell wk-label" style="background:transparent;border:none"></div>${dias.map(d=>`<div class="wk-cell wk-head">${d}</div>`).join("")}`;
+  return `
+  ${head("🗓️","Organização Semanal","Um rascunho da sua semana, montado com receitas do seu estoque no perfil "+cfg.nome+". Use como base e ajuste como quiser.")}
+  <div class="fab-row" style="margin-bottom:16px">
+    <button class="btn btn-primary" data-action="regen-semana">🔀 Gerar nova semana</button>
+    <button class="btn btn-ghost" data-action="nav" data-tab="compras">🧾 Ver lista de compras</button>
+  </div>
+  <div class="week-scroll"><div class="week-grid">${headRow}${rows}</div></div>
+  <p class="muted" style="font-size:13px;margin-top:14px">💡 Dica: cozinhe proteínas e grãos em maior quantidade no início da semana para montar pratos diferentes nos dias corridos.</p>`;
+}
+
+/* ---------- SUBSTITUIÇÕES ---------- */
+function renderSubstituicoes(){
+  const subs = SUBS.filter(s=>s.intens.includes(state.intensidade));
+  // destaca as que se aplicam ao estoque atual
+  const noEstoque = subs.filter(s=>has(s.from));
+  const outras = subs.filter(s=>!has(s.from));
+  const card = s=>{
+    const dest = has(s.from)?`<span class="rtag" style="background:var(--amber-l);color:var(--amber)">no seu estoque</span>`:"";
+    return `<div class="sub-card">
+      <div class="sub-flow">
+        <span class="sub-from">${FOOD_MAP[s.from]?.emoji||"🍽️"} ${s.fromN}</span>
+        <span class="sub-arrow">→</span>
+        <span class="sub-to">✅ ${s.toN}</span>
+      </div>
+      <div class="sub-why">${s.why}</div>
+      <div style="margin-top:8px">${dest}</div>
+    </div>`;
+  };
+  const inventarioSubs = `
+    <div class="section-title">Trocas dentro do seu estoque <span class="pill">sem ingrediente?</span></div>
+    <div class="grid g-2">
+      <div class="sub-card"><div class="sub-flow"><span class="sub-from">🍗 Sem frango?</span><span class="sub-arrow">→</span><span class="sub-to">Use ovo, atum ou carne moída</span></div><div class="sub-why">Mantém a proteína da refeição com o que estiver disponível.</div></div>
+      <div class="sub-card"><div class="sub-flow"><span class="sub-from">🥛 Sem creme de leite?</span><span class="sub-arrow">→</span><span class="sub-to">Iogurte ou requeijão batido</span></div><div class="sub-why">Garante cremosidade em strogonoff e molhos.</div></div>
+      <div class="sub-card"><div class="sub-flow"><span class="sub-from">🍝 Sem macarrão?</span><span class="sub-arrow">→</span><span class="sub-to">Arroz, batata ou legumes</span></div><div class="sub-why">Substitui a base de carboidrato do prato.</div></div>
+      <div class="sub-card"><div class="sub-flow"><span class="sub-from">🍞 Sem pão?</span><span class="sub-arrow">→</span><span class="sub-to">Tapioca, cuscuz ou torrada</span></div><div class="sub-why">Mantém o café da manhã sem precisar sair de casa.</div></div>
+    </div>`;
+  return `
+  ${head("🔄","Substituições","Trocas inteligentes para o perfil "+INTENS[state.intensidade].nome+". As que estão no seu estoque ganham destaque.")}
+  ${noEstoque.length?`<div class="section-title">Sugestões para o seu estoque <span class="pill">${noEstoque.length}</span></div><div class="grid g-2">${noEstoque.map(card).join("")}</div>`:""}
+  <div class="section-title">Trocas saudáveis recomendadas</div>
+  <div class="grid g-2">${outras.map(card).join("")}</div>
+  <div class="divider"></div>
+  ${inventarioSubs}`;
+}
+
+/* ---------- ESTRATÉGIAS ---------- */
+function renderEstrategias(){
+  const cfg = INTENS[state.intensidade];
+  const tone = {
+    intenso:"No perfil intenso, priorize sempre proteína magra + vegetais e deixe o carboidrato para o começo do dia.",
+    moderado:"No perfil moderado, monte pratos equilibrados: metade de vegetais, um quarto de proteína e um quarto de carboidrato.",
+    leve:"No perfil leve, o foco é praticidade e bom senso — coma de tudo um pouco, sem exageros."
+  }[state.intensidade];
+  const strat = (ic,cor,corL,titulo,sub,itens)=>`
+    <div class="strat-card">
+      <div class="head"><div class="strat-ic" style="background:${corL};color:${cor}">${ic}</div>
+        <div><h3>${titulo}</h3><div class="sub">${sub}</div></div></div>
+      <ul class="strat-list">${itens.map((t,i)=>`<li><span class="b">${i+1}</span><span>${t}</span></li>`).join("")}</ul>
+    </div>`;
+  return `
+  ${head("🧭","Estratégias","Como manter o plano de pé na vida real — fora de casa, no trabalho e nos dias sem tempo.")}
+  <div class="banner"><span class="emj">${cfg.emj}</span><div><h4>Perfil ${cfg.nome}</h4><p>${tone}</p></div></div>
+  <div class="grid g-2">
+    ${strat("🏃","var(--accent)","var(--accent-l)","Dias corridos","Quando o tempo é curto",[
+      "Deixe proteínas grelhadas e ovos cozidos prontos na geladeira.",
+      "Aposte em receitas de até 15 min: crepioca, omelete, sanduíche natural e vitaminas.",
+      "Congele porções de feijão, arroz e carne moída para montar pratos em minutos.",
+      "Tenha sempre frutas e iogurte para um lanche que não precisa de preparo."
+    ])}
+    ${strat("🍽️","var(--amber)","var(--amber-l)","Refeições fora de casa","Restaurante, lanchonete ou padaria",[
+      "Comece pela salada ou por um prato com vegetais para reduzir a fome.",
+      "Prefira grelhados a frituras e peça o molho à parte.",
+      "Evite refrigerante: troque por água, água com gás ou suco natural.",
+      "Se for comer algo mais calórico, equilibre nas outras refeições do dia."
+    ])}
+    ${strat("⚖️","var(--violet)","var(--violet-l)","Restaurante por quilo / Refeitório","Montando o prato certo",[
+      "Monte o prato no olhar: metade de saladas e legumes coloridos.",
+      "Escolha 1 proteína magra (frango, peixe, ovo ou carne grelhada).",
+      "Um único carboidrato por refeição — arroz OU macarrão OU batata.",
+      "Pese só uma vez: evite repetir e capriche no copo de água."
+    ])}
+    ${strat("💰","var(--accent-2)","var(--accent-l)","Fim de mês / Economia","Comendo bem gastando pouco",[
+      "Ovos, feijão e frango são proteínas baratas e versáteis.",
+      "Aproveite sobras: arroz vira bolinho ou arroz de forno; legumes viram sopa.",
+      "Compre itens da estação e congele o que estiver perto de vencer.",
+      "Planeje a semana antes de ir ao mercado para evitar desperdício."
+    ])}
+  </div>`;
+}
+
+/* ---------- COMPRAS ---------- */
+function renderCompras(){
+  const list = state.compras;
+  // sugestões: itens faltantes de receitas quase-prontas
+  const quase = getRecipes({maxMissing:2}).filter(r=>!r.complete && r.missing.length<=2);
+  const sugIds = [...new Set(quase.flatMap(r=>r.missing))].filter(id=>!list.some(c=>c.id===id)).slice(0,10);
+  const sugHtml = sugIds.length ? `<div class="card" style="margin-bottom:18px">
+    <div class="section-title" style="margin-top:0">💡 Sugestões para destravar receitas</div>
+    <p class="muted" style="font-size:13px;margin-bottom:12px">Estes itens completam receitas que estão quase prontas no seu estoque.</p>
+    <div class="chip-row">${sugIds.map(id=>`<button class="chip" data-action="add-compra-sug" data-id="${id}">${FOOD_MAP[id]?.emoji} ${FOOD_MAP[id]?.nome} <span class="x">＋</span></button>`).join("")}</div>
+  </div>` : "";
+
+  const done = list.filter(c=>c.done).length;
+  const items = list.length ? list.map((c,i)=>`
+    <div class="list-item ${c.done?'done':''}">
+      <button class="lcheck ${c.done?'on':''}" data-action="toggle-compra" data-i="${i}">${c.done?'✓':''}</button>
+      <span class="lname">${c.emoji||"🛒"} ${c.nome}</span>
+      ${c.cat?`<span class="ltag">${c.cat}</span>`:""}
+      <button class="del-btn" data-action="del-compra" data-i="${i}">✕</button>
+    </div>`).join("") : `<div class="empty"><span class="emj">🧾</span><h3>Lista vazia</h3><p>Adicione itens manualmente ou pelas sugestões e receitas.</p></div>`;
+
+  return `
+  ${head("🧾","Lista de Compras","Tudo que falta para completar suas receitas favoritas — mais o que você adicionar manualmente.")}
+  ${list.length?`<div class="stat-row"><div class="stat"><div class="lab">🛒 Itens</div><div class="num">${list.length}</div></div>
+    <div class="stat"><div class="lab">✅ Comprados</div><div class="num">${done}<small>/${list.length}</small></div></div></div>`:""}
+  <div class="toolbar">
+    <div class="search"><span class="ic">＋</span><input id="compraInput" placeholder="Adicionar item à lista e pressione Enter..."></div>
+    <button class="btn btn-sm btn-primary" data-action="add-compra-manual">Adicionar</button>
+    ${list.length?`<button class="btn btn-sm btn-ghost" data-action="clear-compras">🗑️ Limpar</button>`:""}
+  </div>
+  ${sugHtml}
+  ${items}`;
+}
+
+/* ---------- FAVORITOS ---------- */
+function renderFavoritos(){
+  const list = state.favoritos.map(id=>{
+    const r = RECIPES.find(x=>x.id===id);
+    if(!r) return null;
+    return {...r, ...recipeMatch(r)};
+  }).filter(Boolean);
+  if(!list.length) return head("❤️","Favoritos","Suas receitas salvas.") +
+    `<div class="empty"><span class="emj">🤍</span><h3>Nenhum favorito ainda</h3><p>Toque no coração das receitas para salvá-las aqui e montar seu repertório.</p>
+     <button class="btn btn-primary" data-action="nav" data-tab="receitas">Explorar receitas</button></div>`;
+  return `
+  ${head("❤️","Favoritos","Seu repertório de receitas salvas. O status mostra se você tem os ingredientes agora.")}
+  <div class="grid g-auto">${list.map(recipeCard).join("")}</div>`;
+}
+
+/* ---------- HISTÓRICO ---------- */
+function renderHistorico(){
+  const list = state.historico;
+  if(!list.length) return head("🕑","Histórico","Planos que você já gerou.") +
+    `<div class="empty"><span class="emj">🕑</span><h3>Nenhum plano salvo</h3><p>Gere um cardápio e toque em "Salvar no histórico" para acompanhar sua evolução.</p>
+     <button class="btn btn-primary" data-action="nav" data-tab="cardapios">Gerar cardápio</button></div>`;
+  return `
+  ${head("🕑","Histórico","Seus planos salvos. Revisite o que deu certo e repita quando quiser.")}
+  <button class="btn btn-sm btn-ghost" data-action="clear-historico" style="margin-bottom:16px">🗑️ Limpar histórico</button>
+  <div class="grid g-auto">
+  ${list.slice().reverse().map((h,ri)=>{
+    const realIdx = list.length-1-ri;
+    return `<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:22px">${INTENS[h.intensidade]?.emj||"📋"}</span>
+        <div><strong style="font-size:15px">${INTENS[h.intensidade]?.nome||""}</strong>
+        <div class="muted" style="font-size:12px">${h.dataLabel}</div></div>
+        <button class="del-btn" data-action="del-historico" data-i="${realIdx}" style="margin-left:auto">✕</button>
+      </div>
+      ${h.refeicoes.map(m=>`<div style="display:flex;gap:8px;font-size:13px;padding:5px 0;border-top:1px solid var(--border)">
+        <span style="color:var(--text-faint);font-weight:700;min-width:46px">${m.hora}</span>
+        <span>${m.emj||"🍽️"} ${m.nome}</span></div>`).join("")}
+    </div>`;
+  }).join("")}
+  </div>`;
+}
+
+/* ============================================================
+   MODAL — RECIPE DETAIL
+   ============================================================ */
+function openRecipe(id){
+  const r0 = RECIPES.find(x=>x.id===id);
+  if(!r0) return;
+  const r = {...r0, ...recipeMatch(r0)};
+  const cfg = INTENS[state.intensidade];
+  const allIngs = [...new Set([...(r.ess||[]),...(r.opt||[])])];
+  const ingHtml = allIngs.map(iid=>{
+    const f = FOOD_MAP[iid]; if(!f) return "";
+    const have = has(iid);
+    const ess = (r.ess||[]).includes(iid);
+    return `<div class="ing-row"><span style="font-size:17px">${f.emoji}</span>
+      <span>${f.nome}${ess?'':' <span class="muted" style="font-size:11px">(opcional)</span>'}</span>
+      <span class="st ${have?'have':'miss'}">${have?'✓ tem':'comprar'}</span></div>`;
+  }).join("");
+  const tipos = r.tipo.map(t=>({cafe:"Café da manhã",almoco:"Almoço",lanche:"Lanche",jantar:"Jantar",ceia:"Ceia"}[t])).join(" · ");
+  const missBtn = r.missing.length ? `<button class="btn btn-ghost btn-block" data-action="add-missing" data-id="${r.id}" style="margin-top:10px">🧾 Adicionar ${r.missing.length} item(ns) à lista de compras</button>` : "";
+  document.getElementById("modal").innerHTML = `
+    <div style="position:relative">
+      <div class="modal-thumb" style="background:linear-gradient(135deg,${cfg.corL},var(--surface-2))">${r.emj}</div>
+      <button class="modal-close" data-action="close-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <h2>${r.nome}</h2>
+      <p class="muted" style="font-size:13.5px;margin:6px 0 14px">${r.desc}</p>
+      <div class="rec-meta" style="margin-bottom:16px">
+        <span>⏱️ ${r.tempo} min</span><span>🔥 ~${r.kcal} kcal</span><span>🍽️ ${tipos}</span>
+        <button class="btn btn-sm ${isFav(r.id)?'btn-primary':'btn-ghost'}" data-action="toggle-fav" data-id="${r.id}" style="margin-left:auto">${isFav(r.id)?'❤️ Favorito':'🤍 Favoritar'}</button>
+      </div>
+      <div class="section-title" style="margin-top:0">🧺 Ingredientes</div>
+      <div class="ing-list">${ingHtml}</div>
+      ${missBtn}
+      <div class="section-title">👨‍🍳 Modo de preparo</div>
+      <ol class="step-list">${r.passos.map(p=>`<li>${p}</li>`).join("")}</ol>
+    </div>`;
+  document.getElementById("modalBg").classList.add("show");
+}
+function closeModal(){ document.getElementById("modalBg").classList.remove("show"); }
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+let toastTimer=null;
+function toast(msg, emj="✓"){
+  const w = document.getElementById("toastWrap");
+  const t = document.createElement("div");
+  t.className="toast"; t.innerHTML=`<span class="ic">${emj}</span>${msg}`;
+  w.appendChild(t);
+  setTimeout(()=>{ t.style.transition="all .3s"; t.style.opacity="0"; t.style.transform="translateY(10px)"; setTimeout(()=>t.remove(),300); }, 2200);
+}
+
+function addCompraById(id){
+  if(state.compras.some(c=>c.id===id)) { toast("Já está na lista"); return; }
+  const f = FOOD_MAP[id];
+  state.compras.push({id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"", done:false});
+  save();
+}
+
+const COMMON_ITEMS = ["paofrances","ovo","arroz","feijao","leite","cafe","manteiga","queijoprato","frango","macarrao","tomate","cebola","alho","banana","azeite","sal","oleo","acucar","molhotomate","aveia"];
+
+const ACTIONS = {
+  "nav":(d)=>navTo(d.tab),
+  "open-menu":()=>{document.getElementById("sidebar").classList.add("open");document.getElementById("scrim").classList.add("show");},
+  "close-menu":()=>{document.getElementById("sidebar").classList.remove("open");document.getElementById("scrim").classList.remove("show");},
+  "toggle-theme":()=>{ state.theme = state.theme==="dark"?"light":"dark"; applyTheme(); save(); },
+  "toggle-food":(d)=>{
+    const id=d.id, i=state.estoque.indexOf(id);
+    if(i>=0) state.estoque.splice(i,1); else state.estoque.push(id);
+    state.cardapio=null; save();
+    // re-render leve do estoque (preserva scroll)
+    if(currentTab==="estoque"){ patchEstoque(); } else render();
+    renderNav();
+  },
+  "filter-cat":(d)=>{ estoqueCat=d.cat; render(); },
+  "add-essentials":()=>{
+    let added=0;
+    COMMON_ITEMS.forEach(id=>{ if(!has(id)){ state.estoque.push(id); added++; } });
+    state.cardapio=null; save(); render();
+    toast(added?`${added} itens comuns adicionados`:"Você já tem os básicos", "✨");
+  },
+  "clear-estoque":()=>{ if(confirm("Limpar todo o estoque?")){ state.estoque=[]; state.cardapio=null; save(); render(); toast("Estoque limpo","🗑️"); } },
+  "toggle-objetivo":(d)=>{ toggleArr(state.objetivos,d.id); save(); render(); },
+  "toggle-restricao":(d)=>{ toggleArr(state.restricoes,d.id); state.cardapio=null; save(); render(); },
+  "set-intensidade":(d)=>{ state.intensidade=d.id; state.cardapio=null; save(); render(); toast(`Perfil ${INTENS[d.id].nome} ativado`, INTENS[d.id].emj); },
+  "gerar-cardapio":()=>{ state.cardapio={intensidade:state.intensidade, plano:gerarCardapio(), date:todayStr()}; save(); render(); toast("Novo cardápio gerado","🔀"); },
+  "salvar-historico":()=>{
+    if(!state.cardapio) return;
+    const refeicoes = state.cardapio.plano.filter(p=>p.recipe).map(p=>({hora:p.hora, nome:p.recipe.nome, emj:p.recipe.emj}));
+    if(!refeicoes.length){ toast("Nada para salvar ainda"); return; }
+    state.historico.push({intensidade:state.intensidade, refeicoes, dataLabel:new Date().toLocaleString("pt-BR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})});
+    save(); toast("Plano salvo no histórico","💾"); renderNav();
+  },
+  "meta-inc":(d)=>{ state.metasDia[d.meta]=(state.metasDia[d.meta]||0)+1; save(); render(); },
+  "meta-dec":(d)=>{ state.metasDia[d.meta]=Math.max(0,(state.metasDia[d.meta]||0)-1); save(); render(); },
+  "reset-metas":()=>{ state.metasDia={date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0}; save(); render(); toast("Metas do dia zeradas","↺"); },
+  "rec-filter":(d)=>{ recFilter=d.f; render(); },
+  "open-recipe":(d)=>openRecipe(d.id),
+  "close-modal":()=>closeModal(),
+  "toggle-fav":(d)=>{
+    const was=isFav(d.id);
+    toggleArr(state.favoritos,d.id); save();
+    if(document.getElementById("modalBg").classList.contains("show")) openRecipe(d.id);
+    render();
+    toast(was?"Removido dos favoritos":"Adicionado aos favoritos", was?"🤍":"❤️");
+  },
+  "add-missing":(d)=>{
+    const r=RECIPES.find(x=>x.id===d.id); if(!r) return;
+    const m=recipeMatch(r); let n=0;
+    m.missing.forEach(id=>{ if(!state.compras.some(c=>c.id===id)){ addCompraById(id); n++; } });
+    render(); renderNav(); toast(n?`${n} item(ns) na lista de compras`:"Já estavam na lista","🧾");
+  },
+  "add-compra-sug":(d)=>{ addCompraById(d.id); render(); renderNav(); toast("Adicionado à lista","🧾"); },
+  "add-compra-manual":()=>{
+    const inp=document.getElementById("compraInput"); if(!inp) return;
+    const v=inp.value.trim(); if(!v) return;
+    state.compras.push({id:"manual_"+Date.now(), nome:v, emoji:"🛒", cat:"", done:false});
+    save(); render(); renderNav();
+  },
+  "toggle-compra":(d)=>{ const i=+d.i; if(state.compras[i]){ state.compras[i].done=!state.compras[i].done; save(); render(); } },
+  "del-compra":(d)=>{ state.compras.splice(+d.i,1); save(); render(); renderNav(); },
+  "clear-compras":()=>{ if(confirm("Limpar lista de compras?")){ state.compras=[]; save(); render(); renderNav(); } },
+  "regen-semana":()=>{ render(); toast("Nova semana gerada","🔀"); },
+  "salvar-semana":()=>toast("Semana pronta!"),
+  "clear-historico":()=>{ if(confirm("Limpar todo o histórico?")){ state.historico=[]; save(); render(); } },
+  "del-historico":(d)=>{ state.historico.splice(+d.i,1); save(); render(); },
+};
+
+function toggleArr(arr,v){ const i=arr.indexOf(v); if(i>=0) arr.splice(i,1); else arr.push(v); }
+
+// patch só dos botões do estoque para preservar o scroll ao marcar itens
+function patchEstoque(){
+  document.querySelectorAll(".food").forEach(btn=>{
+    const id=btn.dataset.id;
+    btn.classList.toggle("on", has(id));
+  });
+  // atualiza contadores de categoria e stats sem re-render total
+  const content=document.getElementById("content");
+  // stats
+  const statNums=content.querySelectorAll(".stat .num");
+  if(statNums[0]) statNums[0].innerHTML=`${state.estoque.length}<small> itens</small>`;
+  if(statNums[1]) statNums[1].innerHTML=`${getRecipes({mode:"makeable"}).length}<small> receitas</small>`;
+  if(statNums[2]) statNums[2].textContent=new Set(state.estoque.map(id=>FOOD_MAP[id]?.cat)).size;
+  // counts por categoria
+  content.querySelectorAll(".cat-block").forEach(block=>{
+    const items=[...block.querySelectorAll(".food")];
+    const sel=items.filter(b=>has(b.dataset.id)).length;
+    const cnt=block.querySelector(".count");
+    if(cnt) cnt.textContent=`${sel}/${items.length} no estoque`;
+  });
+}
+
+/* ---------- EVENT DELEGATION ---------- */
+document.addEventListener("click",(e)=>{
+  const el = e.target.closest("[data-action]");
+  if(!el) return;
+  const act = el.dataset.action;
+  if(ACTIONS[act]){ e.preventDefault(); ACTIONS[act](el.dataset); }
+});
+// search + enter handlers
+document.addEventListener("input",(e)=>{
+  if(e.target.id==="estoqueSearch"){ estoqueSearch=e.target.value; const val=e.target; render();
+    // restaura foco e cursor
+    const inp=document.getElementById("estoqueSearch"); if(inp){ inp.focus(); inp.setSelectionRange(val.value.length,val.value.length); } }
+});
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter" && e.target.id==="compraInput"){ e.preventDefault(); ACTIONS["add-compra-manual"](); }
+  if(e.key==="Escape") closeModal();
+});
+
+/* ---------- THEME ---------- */
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme", state.theme==="dark"?"dark":"light");
+  const ic=document.getElementById("themeIc"), lbl=document.getElementById("themeLbl");
+  if(ic) ic.textContent = state.theme==="dark"?"☀️":"🌙";
+  if(lbl) lbl.textContent = state.theme==="dark"?"Modo claro":"Modo escuro";
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  load();
+  applyTheme();
+  renderNav();
+  updateIntensPill();
+  navTo("estoque");
+  // dev check: valida referências de ingredientes
+  let bad=[];
+  RECIPES.forEach(r=>[...(r.ess||[]),...(r.opt||[]),...(r.optAny||[])].forEach(id=>{ if(!FOOD_MAP[id]) bad.push(r.id+":"+id); }));
+  if(bad.length) console.warn("Ingredientes inexistentes:",bad);
+}
+init();
+</script>
+</body>
+</html>
