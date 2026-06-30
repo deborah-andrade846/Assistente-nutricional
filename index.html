@@ -264,21 +264,21 @@ input,select{font-family:inherit}
 .lqty .lqv-input{width:46px;flex:none}
 .lqty .unit-sel{width:auto;min-width:72px}
 /* consumo da semana */
-.consumo-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;background:var(--surface-2);margin-bottom:8px}
+.consumo-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px 10px;padding:11px 13px;border-radius:12px;background:var(--surface-2);margin-bottom:8px}
 .consumo-row.short{background:var(--amber-l)}
 .consumo-row.ref{background:var(--surface-2)}
 .consumo-row .ctag.refbtn{background:var(--violet-l);color:var(--violet);cursor:pointer;transition:var(--t)}
 .consumo-row .ctag.refbtn:hover{background:var(--violet);color:#fff}
 .consumo-row .emj{font-size:19px;flex-shrink:0}
-.consumo-row .cn{font-size:13.5px;font-weight:650;min-width:96px;flex-shrink:0}
-.consumo-row .cbar{flex:1;height:7px;border-radius:20px;background:var(--surface-3);overflow:hidden;min-width:50px}
+.consumo-row .cn{font-size:14px;font-weight:680;flex:1;min-width:0}
+.consumo-row .cdetail{flex-basis:100%;display:flex;align-items:center;gap:9px;min-width:0}
+.consumo-row .cbar{flex:1;height:7px;border-radius:20px;background:var(--surface-3);overflow:hidden;min-width:40px}
 .consumo-row .cbar > div{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
 .consumo-row.short .cbar > div{background:linear-gradient(90deg,var(--amber),#f0a942)}
-.consumo-row .cnum{font-size:11.5px;color:var(--text-soft);font-weight:600;white-space:nowrap}
-.consumo-row .ctag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.consumo-row .cnum{font-size:11.5px;color:var(--text-soft);font-weight:600}
+.consumo-row .ctag{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 .consumo-row .ctag.short{background:var(--amber);color:#fff}
 .consumo-row .ctag.ok{background:var(--accent-l);color:var(--accent-d)}
-@media(max-width:560px){.consumo-row .cbar{display:none}.consumo-row .cn{min-width:0}}
 
 /* ===================== PROFILE / INTENSITY ===================== */
 .intens-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -428,6 +428,13 @@ input,select{font-family:inherit}
 .ing-row .st{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
 .ing-row .st.have{background:var(--accent-l);color:var(--accent-d)}
 .ing-row .st.miss{background:var(--amber-l);color:var(--amber)}
+.ing-row .ing-nm{flex:1}
+.ing-row.removed{opacity:.55}
+.ing-row.removed .ing-nm{text-decoration:line-through}
+.ing-rm{margin-left:auto;flex-shrink:0;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;background:var(--rose-l);color:var(--rose);cursor:pointer;transition:var(--t)}
+.ing-rm:hover{background:var(--rose);color:#fff}
+.ing-rm.add{background:var(--accent-l);color:var(--accent-d)}
+.ing-rm.add:hover{background:var(--accent);color:#fff}
 .step-list{counter-reset:s;display:flex;flex-direction:column;gap:11px;margin-top:6px}
 .step-list li{list-style:none;display:flex;gap:12px;font-size:14px;color:var(--text-soft);line-height:1.5}
 .step-list li::before{counter-increment:s;content:counter(s);flex-shrink:0;width:26px;height:26px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
@@ -511,8 +518,8 @@ input,select{font-family:inherit}
 </div>
 
 <!-- ===================== MODAL ===================== -->
-<div class="modal-bg" id="modalBg" data-action="close-modal">
-  <div class="modal" id="modal" onclick="event.stopPropagation()"></div>
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modal"></div>
 </div>
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -930,16 +937,32 @@ function unitSelect(id){
 }
 // ingredientes cujo consumo NÃO é rastreado por quantidade (uso indeterminado)
 function trackable(id){ const f=FOOD_MAP[id]; return !!f && f.cat!=="Temperos" && f.cat!=="Ingredientes"; }
-// quanto uma receita consome de um ingrediente (padrão 1; overrides abaixo)
+// quanto uma receita consome de um ingrediente.
+// Prioridade: RECIPE_NEED (por receita) > FOOD_USE (por alimento) > 1.
 const RECIPE_NEED = {
   "ovos-queijo":{ovo:3}, "pao-ovo":{ovo:2}, "crepioca":{ovo:2}, "omelete-legumes":{ovo:3},
   "cuscuz-ovo":{ovo:2}, "panqueca-banana":{banana:2}, "pao-requeijao-peru":{paointegral:2},
-  "carne-legumes":{tomate:2}, "file-pure":{batata:4}, "peixe-assado":{batata:3},
-  "salada-completa":{ovo:2}, "arroz-legumes-ovo":{ovo:2}, "bife-acebolado":{cebola:2},
+  "file-pure":{batata:4}, "peixe-assado":{batata:3},
+  "salada-completa":{ovo:2}, "arroz-legumes-ovo":{ovo:2},
   "sanduiche-natural":{paointegral:2}, "omelete-leve":{ovo:3}, "salada-atum":{ovo:2},
   "sopa-legumes":{batata:2}, "caldo-verde":{batata:3}, "arroz-ovo-sobras":{ovo:2}, "pao-queijo-cafe":{paoqueijo:3},
 };
-function ingNeed(r,id){ const n=RECIPE_NEED[r.id]; return (n && n[id]!=null) ? n[id] : 1; }
+// Quantidade típica de um alimento POR receita. Temperos/aromáticos usam frações,
+// porque 1 unidade rende vários pratos (evita pedir "30 cebolas").
+const FOOD_USE = {
+  // aromáticos / temperos vegetais (uma unidade serve vários pratos)
+  cebola:0.25, tomate:0.5, pimentao:0.5, cenoura:0.34, abobrinha:0.5, chuchu:0.5,
+  limao:0.25, beterraba:0.5, vagem:0.34, abobora:0.25, milho:0.5,
+  // folhas (vendidas em maço/pé; rende várias refeições)
+  alface:0.3, couve:0.25, rucula:0.34, espinafre:0.34, agriao:0.34, repolho:0.2, brocolis:0.5, mamao:0.34,
+  // proteínas/queijos/frios pesados: ~1 porção por refeição (já é o padrão), mantém 1
+};
+function ingNeed(r,id){
+  const n=RECIPE_NEED[r.id];
+  if(n && n[id]!=null) return n[id];
+  if(FOOD_USE[id]!=null) return FOOD_USE[id];
+  return 1;
+}
 // ingredientes que uma receita de fato usaria (essenciais + opcionais em estoque), rastreáveis
 function ingUsados(r){
   const used=new Set(r.ess||[]);
@@ -982,9 +1005,12 @@ function recipeMatch(r){
   }
   const optHave = (r.opt||[]).filter(id=>has(id)).length;
   const optTotal = (r.opt||[]).length || 1;
+  // opcionais "de verdade" que faltam (ignora temperos/ingredientes como sal, orégano)
+  const optMissing = (r.opt||[]).filter(id=>!has(id) && trackable(id));
   const essScore = ess.length ? (ess.length-missing.filter(m=>ess.includes(m)).length)/ess.length : 1;
   const score = essScore*0.75 + (optHave/optTotal)*0.25;
-  return {missing, optHave, score, complete:missing.length===0, essScore};
+  const complete = missing.length===0;
+  return {missing, optHave, optMissing, score, complete, allComplete: complete && optMissing.length===0, essScore};
 }
 // retorna receitas ordenadas; mode: 'makeable' (sem essenciais faltando) ou 'all'
 function getRecipes({tipo=null,intens=null,mode="all",onlyFav=false,maxMissing=99,rapida=false}={}){
@@ -1017,9 +1043,34 @@ function gerarCardapio(){
     const pool = completos.length ? completos.slice(0,3) : cands.slice(0,3);
     const pick = pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
     if(pick) used.add(pick.id);
-    plano.push({hora,label,tipo,recipe:pick});
+    plano.push({hora,label,tipo,recipe:pick,remover:[]});
   }
   return plano;
+}
+// recalcula o estado de uma refeição do cardápio considerando ingredientes removidos
+function planMatch(p){
+  const r = (p.recipe && RECIPES.find(x=>x.id===p.recipe.id)) || p.recipe;
+  const removed = p.remover||[];
+  const ess = (r.ess||[]).filter(id=>!removed.includes(id));
+  const opt = (r.opt||[]).filter(id=>!removed.includes(id));
+  const missing = ess.filter(id=>!has(id));
+  const optMissing = opt.filter(id=>!has(id) && trackable(id));
+  const usados = [...ess.filter(id=>has(id)), ...opt.filter(id=>has(id))];
+  const complete = missing.length===0;
+  return {r, removed, ess, opt, missing, optMissing, usados, complete, allComplete: complete && optMissing.length===0};
+}
+// troca apenas UMA refeição do cardápio por outra do mesmo tipo
+function trocarRefeicao(pi){
+  const p = state.cardapio.plano[pi]; if(!p) return false;
+  const usados = new Set(state.cardapio.plano.map((x,i)=> i!==pi && x.recipe ? x.recipe.id : null));
+  let cands = getRecipes({tipo:p.tipo, intens:state.intensidade}).filter(r=>!usados.has(r.id) && (!p.recipe || r.id!==p.recipe.id));
+  if(!cands.length) cands = getRecipes({tipo:p.tipo, intens:state.intensidade}).filter(r=>!p.recipe || r.id!==p.recipe.id);
+  if(!cands.length) return false;
+  const completos = cands.filter(r=>r.complete);
+  const pool = completos.length ? completos.slice(0,4) : cands.slice(0,4);
+  p.recipe = pool[Math.floor(Math.random()*pool.length)];
+  p.remover = [];
+  return true;
 }
 // gera a semana garantindo variedade: nenhuma receita repetida em dias seguidos
 function gerarSemana(){
@@ -1061,10 +1112,12 @@ function consumoSemana(){
     const refUnit = refUnitOf(id);
     const userUnit = unitOf(id);
     const have = qtyOf(id);
+    // arredonda a necessidade para cima (você compra unidades inteiras)
+    const needR = Math.ceil(need[id] - 1e-9);
     const preciso = (userUnit===refUnit);           // unidades batem → subtração exata
-    const falta = preciso ? Math.max(0, need[id]-have) : 0;
+    const falta = preciso ? Math.max(0, needR-have) : 0;
     return {id, nome:f?f.nome:id, emoji:f?f.emoji:"🛒", cat:f?f.cat:"",
-      refUnit, userUnit, need:need[id], usos:usos[id], have, preciso, falta};
+      refUnit, userUnit, need:needR, usos:usos[id], have, preciso, falta};
   }).sort((a,b)=> b.falta-a.falta || (b.preciso-a.preciso) || b.need-a.need);
 }
 
@@ -1275,24 +1328,35 @@ function renderCardapios(){
   }).join("");
 
   // cronograma
-  const tl = plano.map(p=>{
+  plano.forEach(p=>{ if(!p.remover) p.remover=[]; });
+  const tl = plano.map((p,pi)=>{
     const r = p.recipe;
     if(!r) return `<div class="tl-item"><div class="tl-dot">🍽️</div>
       <div class="tl-card"><div class="tl-time">${p.hora}</div><div class="tl-meal">${p.label}</div>
       <h4 style="color:var(--text-faint)">Sem sugestão ainda</h4>
-      <div class="tl-ings">Adicione mais alimentos ao estoque para preencher esta refeição.</div></div></div>`;
-    const have = (r.opt||[]).filter(id=>has(id)).concat((r.ess||[]).filter(id=>has(id)));
-    const ingNames = have.slice(0,5).map(id=>FOOD_MAP[id]?.nome).filter(Boolean).join(", ");
+      <div class="tl-ings">Adicione mais alimentos ao estoque para preencher esta refeição.</div>
+      <div class="tl-foot"><button class="btn btn-sm" data-action="trocar-meal" data-pi="${pi}" style="padding:5px 11px">🔀 Trocar</button></div></div></div>`;
+    const m = planMatch(p);
+    const ingNames = m.usados.slice(0,5).map(id=>FOOD_MAP[id]?.nome).filter(Boolean).join(", ");
+    const removedNames = m.removed.map(id=>FOOD_MAP[id]?.nome||id).filter(Boolean);
+    let badge;
+    if(m.allComplete) badge=`<span class="tl-meta" style="color:var(--accent)">✓ tem tudo</span>`;
+    else if(m.complete) badge=`<span class="tl-meta" style="color:var(--accent-2)">dá pra fazer</span>`;
+    else badge=`<span class="tl-meta" style="color:var(--amber)">🛒 faltam ${m.missing.length}</span>`;
     return `<div class="tl-item"><div class="tl-dot">${r.emj}</div>
-      <div class="tl-card" data-action="open-recipe" data-id="${r.id}" style="cursor:pointer">
-        <div class="tl-time">${p.hora}</div><div class="tl-meal">${p.label}</div>
-        <h4>${r.nome}</h4>
-        <div class="tl-ings">${ingNames || r.desc}</div>
+      <div class="tl-card">
+        <div data-action="open-recipe" data-id="${r.id}" data-pi="${pi}" style="cursor:pointer">
+          <div class="tl-time">${p.hora}</div><div class="tl-meal">${p.label}</div>
+          <h4>${r.nome}${removedNames.length?` <small style="color:var(--text-faint);font-weight:600">(sem ${removedNames.join(", ")})</small>`:''}</h4>
+          <div class="tl-ings">${ingNames || r.desc}</div>
+        </div>
         <div class="tl-foot">
           <span class="tl-meta">⏱️ ${r.tempo} min</span>
           <span class="tl-meta">🔥 ~${r.kcal} kcal</span>
-          ${r.missing.length?`<span class="tl-meta" style="color:var(--amber)">🛒 faltam ${r.missing.length}</span>`:`<span class="tl-meta" style="color:var(--accent)">✓ tem tudo</span>`}
-          <button class="btn btn-sm rec-fav-inline ${isFav(r.id)?'on':''}" data-action="toggle-fav" data-id="${r.id}" style="margin-left:auto;padding:5px 11px">${isFav(r.id)?'❤️ Salvo':'🤍 Salvar'}</button>
+          ${badge}
+          <button class="btn btn-sm" data-action="open-recipe" data-id="${r.id}" data-pi="${pi}" style="padding:5px 11px">✏️ Ajustar</button>
+          <button class="btn btn-sm" data-action="trocar-meal" data-pi="${pi}" style="padding:5px 11px">🔀 Trocar</button>
+          <button class="btn btn-sm rec-fav-inline ${isFav(r.id)?'on':''}" data-action="toggle-fav" data-id="${r.id}" style="padding:5px 11px">${isFav(r.id)?'❤️':'🤍'}</button>
         </div>
       </div></div>`;
   }).join("");
@@ -1334,7 +1398,7 @@ function renderReceitas(){
   const completas = getRecipes().filter(r=>r.complete).length;
   const filters = `<div class="chip-row" style="margin-bottom:18px">
     <button class="chip ${recFilter==='todas'?'on':''}" data-action="rec-filter" data-f="todas">Todas</button>
-    <button class="chip ${recFilter==='completas'?'on':''}" data-action="rec-filter" data-f="completas">✓ Tenho tudo (${completas})</button>
+    <button class="chip ${recFilter==='completas'?'on':''}" data-action="rec-filter" data-f="completas">✓ Dá pra fazer (${completas})</button>
     <button class="chip ${recFilter==='quase'?'on':''}" data-action="rec-filter" data-f="quase">Quase lá (faltam 1-2)</button>
   </div>`;
   const cards = list.length ? `<div class="grid g-auto">${list.map(recipeCard).join("")}</div>`
@@ -1348,10 +1412,13 @@ function recipeCard(r){
   const cfg = INTENS[state.intensidade];
   const thumbBg = `linear-gradient(135deg,${cfg.corL},var(--surface-2))`;
   let match;
-  if(r.complete) match=`<span class="match-tag" style="background:var(--accent)">✓ Tem tudo</span>`;
+  if(r.allComplete) match=`<span class="match-tag" style="background:var(--accent)">✓ Tem tudo</span>`;
+  else if(r.complete) match=`<span class="match-tag" style="background:var(--accent-2)">Dá pra fazer</span>`;
   else if(r.missing.length<=2) match=`<span class="match-tag" style="background:var(--amber)">Faltam ${r.missing.length}</span>`;
   else match=`<span class="match-tag" style="background:var(--text-faint)">Faltam ${r.missing.length}</span>`;
-  const missNote = r.missing.length ? `<div class="miss-note">🛒 Falta: ${r.missing.map(id=>FOOD_MAP[id]?.nome||id).join(", ")}</div>` : "";
+  const missNote = r.missing.length
+    ? `<div class="miss-note">🛒 Falta: ${r.missing.map(id=>FOOD_MAP[id]?.nome||id).join(", ")}</div>`
+    : (r.optMissing && r.optMissing.length ? `<div class="miss-note" style="color:var(--accent-2)">➕ Opcional: ${r.optMissing.map(id=>FOOD_MAP[id]?.nome||id).join(", ")}</div>` : "");
   const tipos = r.tipo.map(t=>({cafe:"Café",almoco:"Almoço",lanche:"Lanche",jantar:"Jantar",ceia:"Ceia"}[t])).slice(0,2);
   return `<div class="rec-card">
     <div class="rec-thumb" style="background:${thumbBg}">${r.emj}${match}
@@ -1362,7 +1429,7 @@ function recipeCard(r){
       <div class="rec-meta">
         <span>⏱️ ${r.tempo} min</span><span>🔥 ~${r.kcal} kcal</span><span>🍽️ ${tipos.join(" · ")}</span>
       </div>
-      <div class="rec-tags">${tipos.map(t=>`<span class="rtag">${t}</span>`).join("")}${r.missing.length?`<span class="rtag miss">${r.missing.length} p/ comprar</span>`:`<span class="rtag" style="background:var(--accent-l);color:var(--accent-d)">pronto p/ fazer</span>`}</div>
+      <div class="rec-tags">${tipos.map(t=>`<span class="rtag">${t}</span>`).join("")}${r.missing.length?`<span class="rtag miss">${r.missing.length} p/ comprar</span>`:(r.allComplete?`<span class="rtag" style="background:var(--accent-l);color:var(--accent-d)">pronto p/ fazer</span>`:`<span class="rtag" style="background:var(--surface-3);color:var(--accent-2)">dá pra fazer</span>`)}</div>
       ${missNote}
       <div class="rec-foot">
         <button class="btn btn-sm btn-primary" data-action="open-recipe" data-id="${r.id}" style="flex:1">Ver receita</button>
@@ -1508,9 +1575,9 @@ function consumoRow(c){
     return `<div class="consumo-row ${c.falta>0?'short':''}">
       <span class="emj">${c.emoji}</span>
       <span class="cn">${c.nome}</span>
-      <span class="cbar"><div style="width:${pct}%"></div></span>
-      <span class="cnum">tem ${fmtQty(c.have)} · precisa ${fmtQty(c.need)} ${c.refUnit}</span>
       ${c.falta>0?`<span class="ctag short">faltam ${fmtQty(c.falta)}</span>`:`<span class="ctag ok">ok</span>`}
+      <span class="cdetail"><span class="cbar"><div style="width:${pct}%"></div></span>
+        <span class="cnum">tem ${fmtQty(c.have)} · precisa ${fmtQty(c.need)} ${c.refUnit}</span></span>
     </div>`;
   }
   // unidade personalizada (ex.: kg, ml, ½ pacote): mostramos como referência, sem subtração
@@ -1518,8 +1585,8 @@ function consumoRow(c){
   return `<div class="consumo-row ref">
     <span class="emj">${c.emoji}</span>
     <span class="cn">${c.nome}</span>
-    <span class="cnum" style="flex:1">usado em ${c.usos} refeição(ões) nesta semana · você tem ${fmtQty(c.have)} ${c.userUnit} (confira se cobre)</span>
     <button class="ctag ${inList?'ok':'refbtn'}" data-action="add-from-food" data-id="${c.id}">${inList?'na lista':'＋ incluir'}</button>
+    <span class="cdetail"><span class="cnum">usado em ${c.usos} refeição(ões) nesta semana · você tem ${fmtQty(c.have)} ${c.userUnit} (confira se cobre)</span></span>
   </div>`;
 }
 function renderFaltamPicker(){
@@ -1661,9 +1728,12 @@ function renderHistorico(){
 /* ============================================================
    MODAL — RECIPE DETAIL
    ============================================================ */
-function openRecipe(id){
+function openRecipe(id, pi){
   const r0 = RECIPES.find(x=>x.id===id);
   if(!r0) return;
+  pi = (pi===undefined||pi===null||pi==="") ? null : +pi;
+  const meal = (pi!==null && state.cardapio && state.cardapio.plano && state.cardapio.plano[pi]) ? state.cardapio.plano[pi] : null;
+  const removed = meal ? (meal.remover||[]) : [];
   const r = {...r0, ...recipeMatch(r0)};
   const cfg = INTENS[state.intensidade];
   const allIngs = [...new Set([...(r.ess||[]),...(r.opt||[])])];
@@ -1671,12 +1741,17 @@ function openRecipe(id){
     const f = FOOD_MAP[iid]; if(!f) return "";
     const have = has(iid);
     const ess = (r.ess||[]).includes(iid);
-    return `<div class="ing-row"><span style="font-size:17px">${f.emoji}</span>
-      <span>${f.nome}${ess?'':' <span class="muted" style="font-size:11px">(opcional)</span>'}</span>
-      <span class="st ${have?'have':'miss'}">${have?'✓ tem':'comprar'}</span></div>`;
+    const isRem = removed.includes(iid);
+    const right = meal
+      ? `<button class="ing-rm ${isRem?'add':''}" data-action="meal-remove-ing" data-pi="${pi}" data-id="${iid}">${isRem?'＋ incluir':'✕ remover'}</button>`
+      : `<span class="st ${have?'have':'miss'}">${have?'✓ tem':'comprar'}</span>`;
+    return `<div class="ing-row ${isRem?'removed':''}"><span style="font-size:17px">${f.emoji}</span>
+      <span class="ing-nm">${f.nome}${ess?'':' <span class="muted" style="font-size:11px">(opcional)</span>'}</span>
+      ${right}</div>`;
   }).join("");
   const tipos = r.tipo.map(t=>({cafe:"Café da manhã",almoco:"Almoço",lanche:"Lanche",jantar:"Jantar",ceia:"Ceia"}[t])).join(" · ");
-  const missBtn = r.missing.length ? `<button class="btn btn-ghost btn-block" data-action="add-missing" data-id="${r.id}" style="margin-top:10px">🧾 Adicionar ${r.missing.length} item(ns) à lista de compras</button>` : "";
+  const missBtn = (!meal && r.missing.length) ? `<button class="btn btn-ghost btn-block" data-action="add-missing" data-id="${r.id}" style="margin-top:10px">🧾 Adicionar ${r.missing.length} item(ns) à lista de compras</button>` : "";
+  const mealNote = meal ? `<div class="banner" style="margin:0 0 14px;padding:11px 14px;background:linear-gradient(120deg,var(--accent-l),var(--surface-2))"><span class="emj" style="font-size:20px">✏️</span><div><h4 style="font-size:13.5px">Ajustando esta refeição</h4><p style="font-size:12px">Toque em <b>remover</b> para tirar um ingrediente sem trocar o prato. Use <b>🔀 Trocar</b> no cronograma para mudar a receita inteira.</p></div></div>` : "";
   document.getElementById("modal").innerHTML = `
     <div style="position:relative">
       <div class="modal-thumb" style="background:linear-gradient(135deg,${cfg.corL},var(--surface-2))">${r.emj}</div>
@@ -1689,6 +1764,7 @@ function openRecipe(id){
         <span>⏱️ ${r.tempo} min</span><span>🔥 ~${r.kcal} kcal</span><span>🍽️ ${tipos}</span>
         <button class="btn btn-sm ${isFav(r.id)?'btn-primary':'btn-ghost'}" data-action="toggle-fav" data-id="${r.id}" style="margin-left:auto">${isFav(r.id)?'❤️ Favorito':'🤍 Favoritar'}</button>
       </div>
+      ${mealNote}
       <div class="section-title" style="margin-top:0">🧺 Ingredientes</div>
       <div class="ing-list">${ingHtml}</div>
       ${missBtn}
@@ -1773,8 +1849,19 @@ const ACTIONS = {
   "meta-dec":(d)=>{ state.metasDia[d.meta]=Math.max(0,(state.metasDia[d.meta]||0)-1); save(); render(); },
   "reset-metas":()=>{ state.metasDia={date:todayStr(),agua:0,refeicoes:0,vegetais:0,proteina:0}; save(); render(); toast("Metas do dia zeradas","↺"); },
   "rec-filter":(d)=>{ recFilter=d.f; render(); },
-  "open-recipe":(d)=>openRecipe(d.id),
+  "open-recipe":(d)=>openRecipe(d.id, d.pi),
   "close-modal":()=>closeModal(),
+  "trocar-meal":(d)=>{
+    if(trocarRefeicao(+d.pi)){ save(); render(); toast("Refeição trocada","🔀"); }
+    else toast("Sem outra opção para esta refeição agora");
+  },
+  "meal-remove-ing":(d)=>{
+    const p = state.cardapio && state.cardapio.plano[+d.pi]; if(!p) return;
+    if(!p.remover) p.remover=[];
+    const i = p.remover.indexOf(d.id);
+    if(i>=0) p.remover.splice(i,1); else p.remover.push(d.id);
+    save(); render(); openRecipe(p.recipe.id, +d.pi);
+  },
   "toggle-fav":(d)=>{
     const was=isFav(d.id);
     toggleArr(state.favoritos,d.id); save();
@@ -1854,6 +1941,10 @@ document.addEventListener("click",(e)=>{
   if(!el) return;
   const act = el.dataset.action;
   if(ACTIONS[act]){ e.preventDefault(); ACTIONS[act](el.dataset); }
+});
+// fecha o modal só ao clicar no fundo (não nos botões internos)
+document.getElementById("modalBg").addEventListener("click",(e)=>{
+  if(e.target.id==="modalBg") closeModal();
 });
 // search + enter handlers
 document.addEventListener("input",(e)=>{
